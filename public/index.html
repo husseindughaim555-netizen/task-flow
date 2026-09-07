@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow - إدارة المشاريع</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: auto; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h1, h2 { color: #333; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, textarea { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        button { background-color: #2563eb; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button:hover { background-color: #1d4ed8; }
+        .project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 15px; }
+        .project-card { background: white; border-top: 4px solid #2563eb; border-radius: 6px; padding: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .project-date { font-size: 0.85em; color: #666; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>نظام TaskFlow لإدارة المشاريع والمهام</h1>
+        
+        <div class="card">
+            <h2>إضافة مشروع جديد</h2>
+            <form id="projectForm">
+                <div class="form-group">
+                    <label>اسم المشروع:</label>
+                    <input type="text" id="name" required placeholder="مثال: منصة التجارة الإلكترونية">
+                </div>
+                <div class="form-group">
+                    <label>الوصف:</label>
+                    <textarea id="description" rows="3" placeholder="وصف موجز للمشروع"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>تاريخ البداية:</label>
+                    <input type="date" id="start_date" required>
+                </div>
+                <div class="form-group">
+                    <label>تاريخ النهاية المتوقع:</label>
+                    <input type="date" id="expected_end_date" required>
+                </div>
+                <button type="submit">حفظ المشروع</button>
+            </form>
+        </div>
+
+        <h2>المشاريع الحالية</h2>
+        <div id="projectsList" class="project-grid">
+            <p>جارٍ تحميل المشاريع...</p>
+        </div>
+    </div>
+
+    <script>
+        async function loadProjects() {
+            const res = await fetch('/api/projects');
+            const data = await res.json();
+            const list = document.getElementById('projectsList');
+            list.innerHTML = '';
+
+            if (data.length === 0) {
+                list.innerHTML = '<p>لا توجد مشاريع مضافة بعد.</p>';
+                return;
+            }
+
+            data.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'project-card';
+                card.innerHTML = `
+                    <h3>${p.name}</h3>
+                    <p>${p.description || 'لا يوجد وصف'}</p>
+                    <div class="project-date">
+                        <strong>البداية:</strong> ${p.start_date}<br>
+                        <strong>النهاية المتوقعة:</strong> ${p.expected_end_date}
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        document.getElementById('projectForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const project = {
+                name: document.getElementById('name').value,
+                description: document.getElementById('description').value,
+                start_date: document.getElementById('start_date').value,
+                expected_end_date: document.getElementById('expected_end_date').value
+            };
+
+            const res = await fetch('/api/projects', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(project)
+            });
+
+            if (res.ok) {
+                document.getElementById('projectForm').reset();
+                loadProjects();
+            } else {
+                alert('حدث خطأ أثناء حفظ المشروع');
+            }
+        });
+
+        loadProjects();
+    </script>
+</body>
+</html>
