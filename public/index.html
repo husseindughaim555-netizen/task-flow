@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow - إدارة المشاريع المتقدمة</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-hover: #1d4ed8;
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --surface-hover: #334155;
+            --border: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --radius: 12px;
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .brand h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #60a5fa, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+
+        .stats-badge {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .stats-badge span {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 32px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-header {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .form-group-full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        input, textarea {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: var(--text-main);
+            font-size: 0.9rem;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        input:focus, textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            margin-top: 12px;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--text-main);
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .project-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .project-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), #a855f7);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .project-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--surface-hover);
+            box-shadow: 0 12px 20px -4px rgba(0, 0, 0, 0.3);
+        }
+
+        .project-card:hover::before {
+            opacity: 1;
+        }
+
+        .project-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        .project-desc {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            line-height: 1.5;
+            margin-bottom: 16px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .project-meta {
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 6px;
+            padding: 10px;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+            background: var(--surface);
+            border: 1px dashed var(--border);
+            border-radius: var(--radius);
+            grid-column: 1 / -1;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 24px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: var(--transition);
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success { border-color: var(--success); color: var(--success); }
+        .toast.error { border-color: var(--danger); color: var(--danger); }
+
+        @media (max-width: 640px) {
+            .form-grid { grid-template-columns: 1fr; }
+            header { flex-direction: column; align-items: flex-start; gap: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="brand">
+                <h1>TaskFlow Workspace</h1>
+                <p>نظام إدارة ومتابعة المشاريع البرمجية</p>
+            </div>
+            <div class="stats-badge">
+                المشاريع النشطة: <span id="projectCount">0</span>
+            </div>
+        </header>
+
+        <section class="card">
+            <h2 class="card-header">إضافة مشروع جديد</h2>
+            <form id="projectForm">
+                <div class="form-grid">
+                    <div class="form-group-full">
+                        <label for="name">اسم المشروع *</label>
+                        <input type="text" id="name" required placeholder="مثال: تطبيق التوصيل السريع">
+                    </div>
+                    <div class="form-group-full">
+                        <label for="description">وصف موجز للمشروع</label>
+                        <textarea id="description" rows="3" placeholder="اكتب تفاصيل وأهداف المشروع هنا..."></textarea>
+                    </div>
+                    <div>
+                        <label for="start_date">تاريخ الانطلاق *</label>
+                        <input type="date" id="start_date" required>
+                    </div>
+                    <div>
+                        <label for="expected_end_date">الموعد النهائي المتوقع *</label>
+                        <input type="date" id="expected_end_date" required>
+                    </div>
+                </div>
+                <button type="submit" id="submitBtn" class="btn-primary">
+                    <span>حفظ وإنشاء المشروع</span>
+                </button>
+            </form>
+        </section>
+
+        <h2 class="section-title">قائمة المشاريع الحالية</h2>
+        <div id="projectsList" class="projects-grid">
+            <div class="empty-state">جارٍ جلب المشاريع...</div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        const projectForm = document.getElementById('projectForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const projectsList = document.getElementById('projectsList');
+        const projectCount = document.getElementById('projectCount');
+        const toast = document.getElementById('toast');
+
+        function showNotification(message, type = 'success') {
+            toast.textContent = message;
+            toast.className = `toast show ${type}`;
+            setTimeout(() => {
+                toast.className = 'toast';
+            }, 3000);
+        }
+
+        async function loadProjects() {
+            try {
+                const res = await fetch('/api/projects');
+                if (!res.ok) throw new Error('فشل جلب البيانات');
+                const projects = await res.json();
+
+                projectCount.textContent = projects.length;
+
+                if (projects.length === 0) {
+                    projectsList.innerHTML = `
+                        <div class="empty-state">
+                            <p>لا توجد مشاريع مضافة حالياً. ابدأ بإضافة مشروعك الأول أعلاه!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                projectsList.innerHTML = projects.map(p => `
+                    <article class="project-card">
+                        <div>
+                            <h3 class="project-title">${p.name}</h3>
+                            <p class="project-desc">${p.description ? p.description : 'لا يتوفر وصف لهذا المشروع.'}</p>
+                        </div>
+                        <div class="project-meta">
+                            <div><strong>البداية:</strong> ${p.start_date}</div>
+                            <div><strong>التسليم:</strong> ${p.expected_end_date}</div>
+                        </div>
+                    </article>
+                `).join('');
+            } catch (err) {
+                projectsList.innerHTML = `<div class="empty-state">تعذر الاتصال بالخادم لعرض المشاريع.</div>`;
+            }
+        }
+
+        projectForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const startDate = document.getElementById('start_date').value;
+            const endDate = document.getElementById('expected_end_date').value;
+
+            if (new Date(endDate) < new Date(startDate)) {
+                showNotification('تاريخ النهاية لا يمكن أن يكون قبل تاريخ البداية', 'error');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.querySelector('span').textContent = 'جارٍ الحفظ...';
+
+            const payload = {
+                name: document.getElementById('name').value.trim(),
+                description: document.getElementById('description').value.trim(),
+                start_date: startDate,
+                expected_end_date: endDate
+            };
+
+            try {
+                const res = await fetch('/api/projects', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!res.ok) throw new Error();
+
+                projectForm.reset();
+                showNotification('تمت إضافة المشروع بنجاح!');
+                await loadProjects();
+            } catch (err) {
+                showNotification('حدث خطأ أثناء حفظ المشروع', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.querySelector('span').textContent = 'حفظ وإنشاء المشروع';
+            }
+        });
+
+        loadProjects();
+    </script>
+</body>
+</html>
