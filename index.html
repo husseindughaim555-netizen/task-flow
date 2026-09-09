@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow - Kanban Board</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+```
+<aside class="sidebar">
+
+    <div class="logo">
+        <div class="logo-icon">T</div>
+        <div>
+            <h2>TaskFlow</h2>
+            <span>Project Manager</span>
+        </div>
+    </div>
+
+    <nav>
+        <p class="menu-title">MAIN MENU</p>
+
+        <a class="nav-item active">▦ <span>Kanban Board</span></a>
+        <a class="nav-item">◷ <span>My Tasks</span></a>
+        <a class="nav-item">▥ <span>Reports</span></a>
+        <a class="nav-item">⚙ <span>Settings</span></a>
+    </nav>
+
+    <div class="sidebar-bottom">
+        <div class="user-card">
+            <div class="avatar">A</div>
+            <div>
+                <strong>Project Member</strong>
+                <small>Team Member</small>
+            </div>
+        </div>
+    </div>
+
+</aside>
+
+
+<main class="main-content">
+
+    <header class="topbar">
+
+        <div>
+            <span class="breadcrumb">Workspace / Projects</span>
+            <h1>Kanban Board</h1>
+            <p>Manage your team's tasks and track project progress.</p>
+        </div>
+          
+        <button class="create-btn"
+            onclick="document.getElementById('taskInput').focus()">
+            + Create Task
+        </button>
+
+    </header>
+
+
+    <!-- STATISTICS -->
+
+    <section class="stats">
+
+        <div class="stat-card">
+            <div class="stat-icon purple">◫</div>
+
+            <div>
+                <span>Total Tasks</span>
+                <strong id="totalTasks">0</strong>
+            </div>
+        </div>
+
+
+        <div class="stat-card">
+            <div class="stat-icon orange">◷</div>
+
+            <div>
+                <span>In Progress</span>
+                <strong id="progressTasks">0</strong>
+            </div>
+        </div>
+
+
+        <div class="stat-card">
+            <div class="stat-icon green">✓</div>
+
+            <div>
+                <span>Completed</span>
+                <strong id="completedTasks">0</strong>
+            </div>
+        </div>
+
+
+        <div class="stat-card">
+            <div class="stat-icon blue">↗</div>
+
+            <div>
+                <span>Completion</span>
+                <strong id="completionPercent">0%</strong>
+            </div>
+        </div>
+
+    </section>
+
+
+    <!-- SEARCH & FILTERS -->
+
+    <section class="toolbar">
+
+        <div class="search-box">
+            🔍
+            <input
+                type="text"
+                id="searchInput"
+                placeholder="Search tasks..."
+            >
+        </div>
+
+       <div class="filters">
+
+    <select id="priorityFilter">
+        <option value="all">All Tasks</option>
+        <option value="low">Low Priority</option>
+        <option value="medium">Medium Priority</option>
+        <option value="high">High Priority</option>
+    </select>
+
+    <select id="memberFilter">
+        <option value="all">All Members</option>
+    </select>
+
+</div>
+
+    </section>
+
+
+    <!-- ADD TASK -->
+
+    <section class="add-task-box">
+
+        <input
+            type="text"
+            id="taskInput"
+            placeholder="What needs to be done?"
+        >
+
+        <select id="priorityInput">
+
+            <option value="low">
+                Low Priority
+            </option>
+
+            <option value="medium">
+                Medium Priority
+            </option>
+
+            <option value="high">
+                High Priority
+            </option>
+
+        </select>
+
+
+        <input
+            type="text"
+            id="assigneeInput"
+            placeholder="Assignee"
+        >
+
+
+        <input
+            type="date"
+            id="dateInput"
+        >
+
+
+        <button onclick="addTask()">
+            Add Task
+        </button>
+
+    </section>
+
+
+    <!-- KANBAN BOARD -->
+
+    <section class="board">
+
+
+        <!-- TO DO -->
+
+        <div class="column todo">
+
+            <div class="column-header">
+
+                <div>
+                    <span class="status-dot"></span>
+
+                    <h2>To Do</h2>
+
+                    <span class="count">0</span>
+                </div>
+
+                <button>•••</button>
+
+            </div>
+
+            <div class="tasks"></div>
+
+        </div>
+
+
+        <!-- IN PROGRESS -->
+
+        <div class="column progress">
+
+            <div class="column-header">
+
+                <div>
+                    <span class="status-dot"></span>
+
+                    <h2>In Progress</h2>
+
+                    <span class="count">0</span>
+                </div>
+
+                <button>•••</button>
+
+            </div>
+
+            <div class="tasks"></div>
+
+        </div>
+
+
+        <!-- COMPLETED -->
+
+        <div class="column completed">
+
+            <div class="column-header">
+
+                <div>
+                    <span class="status-dot"></span>
+
+                    <h2>Completed</h2>
+
+                    <span class="count">0</span>
+                </div>
+
+                <button>•••</button>
+
+            </div>
+
+            <div class="tasks"></div>
+
+        </div>
+
+
+    </section>
+    <!-- ACTIVITY LOG -->
+
+<section class="activity-section">
+
+    <div class="activity-header">
+        <div>
+            <span class="breadcrumb">Recent Activity</span>
+            <h2>Activity Log</h2>
+        </div>
+    </div>
+
+    <div id="activityLog" class="activity-log">
+
+        <div class="activity-empty">
+            No activity yet.
+        </div>
+
+    </div>
+
+</section>
+
+</main>
+
+
+<script src="script.js"></script>
+```
+
+</body>
+</html>
