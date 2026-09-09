@@ -319,6 +319,53 @@
                 </button>
             </form>
         </section>
+        <section class="card" style="margin-top: 2rem;">
+            <div class="card-header">
+                <h2>إدارة المهام والتسلسل الهرمي</h2>
+                <p>إضافة مهام جديدة وتعيين أولوياتها وتقسيمها إلى مهام فرعية</p>
+            </div>
+            <form id="taskForm">
+                <input type="hidden" id="task_parent_id" value="">
+                <div id="parentTaskNotice" style="display: none; background: #e0f2fe; color: #0369a1; padding: 10px; border-radius: 6px; margin-bottom: 1rem; font-size: 0.9rem;">
+                    <span>جاري إضافة مهمة فرعية للمهمة: <strong id="parentTaskTitle"></strong></span>
+                    <button type="button" id="cancelSubTaskBtn" style="margin-right: 10px; background: none; border: none; color: #dc2626; cursor: pointer; text-decoration: underline;">إلغاء التبعية</button>
+                </div>
+                <div class="form-grid">
+                    <div>
+                        <label for="task_project_id">المشروع التابع له *</label>
+                        <select id="task_project_id" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1;"></select>
+                    </div>
+                    <div>
+                        <label for="task_priority">أولوية المهمة *</label>
+                        <select id="task_priority" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1;">
+                            <option value="منخفضة">منخفضة</option>
+                            <option value="متوسطة" selected>متوسطة</option>
+                            <option value="عالية">عالية</option>
+                        </select>
+                    </div>
+                    <div class="form-group-full">
+                        <label for="task_title">عنوان المهمة *</label>
+                        <input type="text" id="task_title" required placeholder="مثال: تصميم نموذج قاعدة البيانات">
+                    </div>
+                    <div class="form-group-full">
+                        <label for="task_description">وصف المهمة</label>
+                        <textarea id="task_description" rows="2" placeholder="اكتب تفاصيل تنفيذ هذه المهمة..."></textarea>
+                    </div>
+                </div>
+                <button type="submit" id="taskSubmitBtn" class="btn-primary" style="margin-top: 1rem;">
+                    <span>إضافة المهمة</span>
+                </button>
+            </form>
+            
+            <div style="margin-top: 2rem;">
+                <h3 style="margin-bottom: 1rem; font-size: 1.1rem;">قائمة المهام والتسلسل الهرمي</h3>
+                <div id="tasksHierarchyContainer" style="display: flex; flex-direction: column; gap: 10px;">
+                    <div class="empty-state">اختر مشروعاً لعرض مهامه</div>
+                </div>
+            </div>
+        </section>
+
+
 
         <h2 class="section-title">قائمة المشاريع الحالية</h2>
         <div id="projectsList" class="projects-grid">
@@ -418,7 +465,149 @@
             }
         });
 
-        loadProjects();
+       // --- منطق العضو 2: إدارة المهام والربط البرمجي ---
+        const taskForm = document.getElementById('taskForm');
+        const taskProjectId = document.getElementById('task_project_id');
+        const taskPriority = document.getElementById('task_priority');
+        const taskTitle = document.getElementById('task_title');
+        const taskDescription = document.getElementById('task_description');
+        const taskParentId = document.getElementById('task_parent_id');
+        const parentTaskNotice = document.getElementById('parentTaskNotice');
+        const parentTaskTitle = document.getElementById('parentTaskTitle');
+        const cancelSubTaskBtn = document.getElementById('cancelSubTaskBtn');
+        const tasksHierarchyContainer = document.getElementById('tasksHierarchyContainer');
+
+        if (cancelSubTaskBtn) {
+            cancelSubTaskBtn.addEventListener('click', () => {
+                taskParentId.value = '';
+                parentTaskNotice.style.display = 'none';
+            });
+        }
+
+        async function populateProjectSelect() {
+            try {
+                const res = await fetch('/api/projects');
+                const projects = await res.json();
+                if (taskProjectId) {
+                    taskProjectId.innerHTML = projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+                    if (projects.length > 0) loadTasks(taskProjectId.value);
+                }
+            } catch (e) { }
+        }
+
+        if (taskProjectId) {
+            taskProjectId.addEventListener('change', () => {
+                loadTasks(taskProjectId.value);
+            });
+        }
+
+        async function loadTasks(projectId) {
+            if (!projectId || !tasksHierarchyContainer) return;
+            try {
+                const res = await fetch(`/api/projects/${projectId}/tasks`);
+                const tasks = await res.json();
+                renderTasksTree(tasks);
+            } catch (err) {
+                tasksHierarchyContainer.innerHTML = '<div class="empty-state">فشل جلب المهام</div>';
+            }
+        }
+
+        function renderTasksTree(tasks) {
+            if (!tasksHierarchyContainer) return;
+            if (!tasks || tasks.length === 0) {
+                tasksHierarchyContainer.innerHTML = '<div class="empty-state">لا توجد مهام مضافة لهذا المشروع بعد.</div>';
+                return;
+            }
+            const rootTasks = tasks.filter(t => !t.parent_id);
+            const subTasks = tasks.filter(t => t.parent_id);
+
+            const priorityColors = { 'عالية': '#ef4444', 'متوسطة': '#f59e0b', 'منخفضة': '#10b981' };
+
+            tasksHierarchyContainer.innerHTML = rootTasks.map(parent => {
+                const children = subTasks.filter(c => c.parent_id === parent.id);
+                return `
+                    <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; background: #ffffff;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong style="font-size: 1.05rem;">${parent.title}</strong>
+                                <span style="background: ${priorityColors[parent.priority] || '#64748b'}; color: #fff; font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; margin-right: 8px;">
+                                    ${parent.priority}
+                                </span>
+                                <p style="color: #64748b; font-size: 0.85rem; margin: 4px 0 0 0;">${parent.description || 'لا يوجد وصف'}</p>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button type="button" onclick="setSubTaskParent(${parent.id}, '${parent.title}')" style="background: #f1f5f9; border: 1px solid #cbd5e1; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">+ مهمة فرعية</button>
+                                <button type="button" onclick="deleteTask(${parent.id})" style="background: #fee2e2; border: 1px solid #fca5a5; color: #b91c1c; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">حذف</button>
+                            </div>
+                        </div>
+                        ${children.length > 0 ? `
+                            <div style="margin-top: 10px; padding-right: 20px; border-right: 3px solid #cbd5e1; display: flex; flex-direction: column; gap: 8px;">
+                                ${children.map(child => `
+                                    <div style="background: #f8fafc; padding: 8px 12px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
+                                        <div>
+                                            <span style="font-weight: 500;">↳ ${child.title}</span>
+                                            <span style="background: ${priorityColors[child.priority] || '#64748b'}; color: #fff; font-size: 0.7rem; padding: 1px 6px; border-radius: 10px; margin-right: 6px;">${child.priority}</span>
+                                        </div>
+                                        <button type="button" onclick="deleteTask(${child.id})" style="background: none; border: none; color: #dc2626; cursor: pointer; font-size: 0.8rem;">حذف</button>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        window.setSubTaskParent = function(id, title) {
+            taskParentId.value = id;
+            parentTaskTitle.textContent = title;
+            parentTaskNotice.style.display = 'block';
+            taskTitle.focus();
+        };
+
+        window.deleteTask = async function(id) {
+            if (!confirm('هل أنت متأكد من حذف هذه المهمة؟')) return;
+            try {
+                const res = await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
+                if (!res.ok) throw new Error();
+                showNotification('تم حذف المهمة');
+                loadTasks(taskProjectId.value);
+            } catch (e) {
+                showNotification('فشل حذف المهمة', 'error');
+            }
+        };
+
+        if (taskForm) {
+            taskForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const payload = {
+                    project_id: taskProjectId.value,
+                    title: taskTitle.value.trim(),
+                    description: taskDescription.value.trim(),
+                    priority: taskPriority.value,
+                    parent_id: taskParentId.value ? parseInt(taskParentId.value) : null
+                };
+
+                try {
+                    const res = await fetch('/api/tasks', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!res.ok) throw new Error();
+                    taskTitle.value = '';
+                    taskDescription.value = '';
+                    taskParentId.value = '';
+                    parentTaskNotice.style.display = 'none';
+                    showNotification('تمت إضافة المهمة بنجاح!');
+                    loadTasks(taskProjectId.value);
+                } catch (err) {
+                    showNotification('حدث خطأ أثناء إضافة المهمة', 'error');
+                }
+            });
+        }
+
+        loadProjects().then(() => populateProjectSelect());
     </script>
 </body>
 </html>
