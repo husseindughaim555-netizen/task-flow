@@ -250,6 +250,53 @@
             border-radius: var(--radius);
             grid-column: 1 / -1;
         }
+        
+            .progress-summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .progress-box {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .progress-box strong {
+            display: block;
+            font-size: 1.4rem;
+            color: var(--primary);
+            margin-top: 4px;
+        }
+
+        .member-report {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .member-report h3 {
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+
+        .member-report p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin: 4px 0;
+        }
+
+    @media (max-width: 640px) {
+        .progress-summary {
+            grid-template-columns: 1fr;
+        }
+    }
 
         .toast {
             position: fixed;
@@ -320,6 +367,16 @@
             </form>
         </section>
 
+<section class="card">
+    <h2 class="card-header">تقرير تقدم الأعضاء</h2>
+
+    <div id="progressReport">
+        <div class="empty-state">
+            جارٍ تحميل تقرير التقدم...
+        </div>
+    </div>
+</section>
+
         <h2 class="section-title">قائمة المشاريع الحالية</h2>
         <div id="projectsList" class="projects-grid">
             <div class="empty-state">جارٍ جلب المشاريع...</div>
@@ -334,6 +391,63 @@
         const projectsList = document.getElementById('projectsList');
         const projectCount = document.getElementById('projectCount');
         const toast = document.getElementById('toast');
+        const progressReport = document.getElementById('progressReport');
+
+async function loadProgressReport() {
+    try {
+        const res = await fetch('/api/progress-report');
+
+        if (!res.ok) {
+            throw new Error('فشل جلب تقرير التقدم');
+        }
+
+        const data = await res.json();
+
+        if (data.members.length === 0) {
+            progressReport.innerHTML = `
+                <div class="empty-state">
+                    <p>لا توجد بيانات أعضاء أو مهام لعرض التقرير حالياً.</p>
+                </div>
+            `;
+            return;
+        }
+
+        progressReport.innerHTML = `
+            <div class="progress-summary">
+                <div class="progress-box">
+                    إجمالي المهام
+                    <strong>${data.overall.total_tasks}</strong>
+                </div>
+
+                <div class="progress-box">
+                    المهام المنجزة
+                    <strong>${data.overall.completed_tasks}</strong>
+                </div>
+
+                <div class="progress-box">
+                    نسبة الإنجاز الكلية
+                    <strong>${data.overall.completion_rate}%</strong>
+                </div>
+            </div>
+
+            ${data.members.map(member => `
+                <div class="member-report">
+                    <h3>${member.name}</h3>
+                    <p>إجمالي المهام: ${member.total_tasks}</p>
+                    <p>المهام المنجزة: ${member.completed_tasks}</p>
+                    <p>نسبة الإنجاز: ${member.completion_rate}%</p>
+                </div>
+            `).join('')}
+        `;
+
+    } catch (err) {
+        progressReport.innerHTML = `
+            <div class="empty-state">
+                تعذر تحميل تقرير التقدم.
+            </div>
+        `;
+    }
+}        
 
         function showNotification(message, type = 'success') {
             toast.textContent = message;
@@ -419,6 +533,8 @@
         });
 
         loadProjects();
+        loadProgressReport();
+
     </script>
 </body>
 </html>

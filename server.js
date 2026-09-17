@@ -64,6 +64,70 @@ app.post('/api/projects', (req, res) => {
     });
 });
 
+// مسار تقرير تقدم المهام لكل عضو
+app.get('/api/progress-report', (req, res) => {
+    const query = `
+        SELECT
+            users.id,
+            users.name,
+            COUNT(tasks.id) AS total_tasks,
+            SUM(CASE WHEN tasks.status = 'منتهي' THEN 1 ELSE 0 END) AS completed_tasks
+        FROM users
+        LEFT JOIN tasks ON users.id = tasks.assigned_to
+        GROUP BY users.id, users.name
+        ORDER BY users.id
+    `;
+
+    db.all(query, [], (err, rows) => {
+        if (err) {
+            console.error('Progress report error:', err.message);
+            return res.status(500).json({
+                error: 'حدث خطأ أثناء حساب تقرير التقدم.'
+            });
+        }
+
+        const members = rows.map(row => {
+            const totalTasks = row.total_tasks || 0;
+            const completedTasks = row.completed_tasks || 0;
+
+            const completionRate = totalTasks > 0
+                ? (100 * completedTasks / totalTasks).toFixed(2)
+                : '0.00';
+
+            return {
+                id: row.id,
+                name: row.name,
+                total_tasks: totalTasks,
+                completed_tasks: completedTasks,
+                completion_rate: Number(completionRate)
+            };
+        });
+
+        const totalTasks = members.reduce(
+            (sum, member) => sum + member.total_tasks,
+            0
+        );
+
+        const completedTasks = members.reduce(
+            (sum, member) => sum + member.completed_tasks,
+            0
+        );
+
+        const overallCompletionRate = totalTasks > 0
+            ? Number((100 * completedTasks / totalTasks).toFixed(2))
+            : 0;
+
+        res.json({
+            members,
+            overall: {
+                total_tasks: totalTasks,
+                completed_tasks: completedTasks,
+                completion_rate: overallCompletionRate
+            }
+        });
+    });
+});
+
 // تشغيل الخادم
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
