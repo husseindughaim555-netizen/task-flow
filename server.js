@@ -160,7 +160,15 @@ app.delete('/api/tasks/:id', (req, res) => {
         res.json({ message: 'تم حذف المهمة بنجاح.' });
     });
 });
-
+// جلب قائمة المستخدمين لتعيين المهام
+app.get('/api/users', (req, res) => {
+    db.all('SELECT id, name FROM users', [], (err, rows) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.json(rows);
+    });
+});
 // تشغيل الخادم
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
