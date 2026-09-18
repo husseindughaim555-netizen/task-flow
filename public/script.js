@@ -1,456 +1,261 @@
-function addTask() {
+let currentProjectId = null;
 
-    const taskInput = document.getElementById("taskInput");
-    const priorityInput = document.getElementById("priorityInput");
-    const assigneeInput = document.getElementById("assigneeInput");
-    const dateInput = document.getElementById("dateInput");
+const statusMap = {
+    todo: "جديد",
+    progress: "قيد العمل",
+    completed: "منتهي"
+};
 
-    const taskText = taskInput.value.trim();
-    const priority = priorityInput.value;
-    const assignee = assigneeInput.value.trim() || "Unassigned";
-    const date = dateInput.value || "No date";
+/* تشغيل الكود بعد تحميل الصفحة */
+document.addEventListener("DOMContentLoaded", function () {
 
-    if (taskText === "") {
-        alert("Please enter a task name.");
+    const projectInput = document.getElementById("projectInput");
+
+    if (!projectInput) {
+        alert("لم يتم العثور على خانة المشروع");
         return;
     }
 
-    const task = document.createElement("div");
-    task.className = "task";
+    projectInput.addEventListener("change", function () {
 
-    task.innerHTML = `
-        <div class="task-info">
-
-            <strong>${taskText}</strong>
-
-            <div class="task-details">
-
-                <span class="priority ${priority}">
-                    ${priority.toUpperCase()}
-                </span>
-
-                <span class="assignee">
-                    👤 ${assignee}
-                </span>
-
-                <span class="due-date">
-                    📅 ${date}
-                </span>
-
-                <select class="task-status" onchange="changeTaskStatus(this)">
-                    <option value="todo">To Do</option>
-                    <option value="progress">In Progress</option>
-                    <option value="completed">Completed</option>
-                </select>
-
-            </div>
-
-        </div>
-
-        <button class="delete-task" onclick="deleteTask(this)">
-            Delete
-        </button>
-    `;
-
-    document.querySelector(".todo .tasks").appendChild(task);
-
-    taskInput.value = "";
-    assigneeInput.value = "";
-    dateInput.value = "";
-    priorityInput.value = "low";
-
-    updateCounts();
-    updateMemberFilter();
-    applyFilters();
-    saveTasks();
-        addActivity(
-        `New task "${taskText}" was added`
-    );
-}
-
-function deleteTask(button) {
-
-    const task = button.closest(".task");
-
-    if (!task) {
-        return;
-    }
-
-    const taskName =
-        task.querySelector("strong").textContent;
-
-    task.remove();
-
-    updateCounts();
-    updateMemberFilter();
-    applyFilters();
-    saveTasks();
-
-    addActivity(
-        `Task "${taskName}" was deleted`
-    );
-}
-
-function changeTaskStatus(select) {
-
-    const task = select.closest(".task");
-
-    if (!task) {
-        return;
-    }
-
-    const taskName =
-        task.querySelector("strong").textContent;
-
-    let targetColumn;
-    let statusText = "";
-
-    if (select.value === "todo") {
-        targetColumn = document.querySelector(".todo .tasks");
-        statusText = "To Do";
-    }
-
-    if (select.value === "progress") {
-        targetColumn = document.querySelector(".progress .tasks");
-        statusText = "In Progress";
-    }
-
-    if (select.value === "completed") {
-        targetColumn = document.querySelector(".completed .tasks");
-        statusText = "Completed";
-    }
-
-    if (targetColumn) {
-        targetColumn.appendChild(task);
-    }
-
-    updateCounts();
-    applyFilters();
-    saveTasks();
-
-    addActivity(
-        `Task "${taskName}" moved to ${statusText}`
-    );
-}
-
-
-
-function updateCounts() {
-
-    const todoTasks =
-        document.querySelectorAll(".todo .task").length;
-
-    const progressTasks =
-        document.querySelectorAll(".progress .task").length;
-
-    const completedTasks =
-        document.querySelectorAll(".completed .task").length;
-
-    const totalTasks =
-        todoTasks + progressTasks + completedTasks;
-
-
-    document.getElementById("totalTasks").textContent =
-        totalTasks;
-
-    document.getElementById("progressTasks").textContent =
-        progressTasks;
-
-    document.getElementById("completedTasks").textContent =
-        completedTasks;
-
-
-    let completion = 0;
-
-    if (totalTasks > 0) {
-        completion =
-            Math.round((completedTasks / totalTasks) * 100);
-    }
-
-    document.getElementById("completionPercent").textContent =
-        completion + "%";
-
-
-    document.querySelector(".todo .count").textContent =
-        todoTasks;
-
-    document.querySelector(".progress .count").textContent =
-        progressTasks;
-
-    document.querySelector(".completed .count").textContent =
-        completedTasks;
-}
-
-
-const searchInput =
-    document.getElementById("searchInput");
-
-const priorityFilter =
-    document.getElementById("priorityFilter");
-
-const memberFilter =
-    document.getElementById("memberFilter");
-
-
-function updateMemberFilter() {
-
-    const members = new Set();
-
-    const tasks =
-        document.querySelectorAll(".task");
-
-    tasks.forEach(function(task) {
-
-        const assignee =
-            task.querySelector(".assignee");
-
-        if (!assignee) {
+        if (this.value === "") {
+            currentProjectId = null;
+            clearBoard();
             return;
         }
 
-        const name =
-            assignee.textContent
-                .replace("👤", "")
-                .trim();
+        currentProjectId = Number(this.value);
 
-        if (name && name !== "Unassigned") {
-            members.add(name);
+        loadTasks();
+    });
+
+    loadProjects();
+    loadUsers();
+});
+
+
+/* تحميل المشاريع */
+async function loadProjects() {
+
+    try {
+
+        const response = await fetch("/api/projects");
+
+        if (!response.ok) {
+            throw new Error("فشل تحميل المشاريع");
         }
 
-    });
+        const projects = await response.json();
 
+        const projectInput =
+            document.getElementById("projectInput");
 
-    memberFilter.innerHTML =
-        '<option value="all">All Members</option>';
+        projectInput.innerHTML =
+            '<option value="">اختر المشروع</option>';
 
+        projects.forEach(function (project) {
 
-    members.forEach(function(member) {
+            const option =
+                document.createElement("option");
 
-        const option =
-            document.createElement("option");
+            option.value = project.id;
+            option.textContent = project.name;
 
-        option.value = member;
-        option.textContent = member;
+            projectInput.appendChild(option);
+        });
 
-        memberFilter.appendChild(option);
+    } catch (error) {
 
-    });
+        console.error(error);
+
+        alert("لم يتم تحميل المشاريع");
+    }
 }
 
 
-function applyFilters() {
+/* تحميل المستخدمين */
+async function loadUsers() {
 
-    const searchText =
-        searchInput.value.toLowerCase().trim();
+    try {
 
-    const selectedPriority =
-        priorityFilter.value;
+        const response = await fetch("/api/users");
 
-    const selectedMember =
-        memberFilter.value;
-
-
-    const tasks =
-        document.querySelectorAll(".task");
-
-
-    tasks.forEach(function(task) {
-
-        const taskName =
-            task.querySelector("strong")
-                .textContent
-                .toLowerCase();
-
-
-        const priorityElement =
-            task.querySelector(".priority");
-
-        const priority =
-            priorityElement.classList[1];
-
-
-        const memberElement =
-            task.querySelector(".assignee");
-
-        const member =
-            memberElement.textContent
-                .replace("👤", "")
-                .trim();
-
-
-        const matchesSearch =
-            taskName.includes(searchText);
-
-        const matchesPriority =
-            selectedPriority === "all" ||
-            priority === selectedPriority;
-
-        const matchesMember =
-            selectedMember === "all" ||
-            member === selectedMember;
-
-
-        if (
-            matchesSearch &&
-            matchesPriority &&
-            matchesMember
-        ) {
-            task.style.display = "";
-        } else {
-            task.style.display = "none";
+        if (!response.ok) {
+            throw new Error("فشل تحميل المستخدمين");
         }
 
-    });
+        const users = await response.json();
+
+        const assigneeInput =
+            document.getElementById("assigneeInput");
+
+        assigneeInput.innerHTML =
+            '<option value="">اختر المسؤول</option>';
+
+        users.forEach(function (user) {
+
+            const option =
+                document.createElement("option");
+
+            option.value = user.id;
+            option.textContent = user.name;
+
+            assigneeInput.appendChild(option);
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert("لم يتم تحميل المستخدمين");
+    }
 }
 
 
-searchInput.addEventListener(
-    "input",
-    applyFilters
-);
+/* إضافة مهمة */
+async function addTask() {
+
+    const projectInput =
+        document.getElementById("projectInput");
+
+    const taskInput =
+        document.getElementById("taskInput");
+
+    const priorityInput =
+        document.getElementById("priorityInput");
+
+    const assigneeInput =
+        document.getElementById("assigneeInput");
 
 
-priorityFilter.addEventListener(
-    "change",
-    applyFilters
-);
+    const projectId = projectInput.value;
+    const title = taskInput.value.trim();
+    const priority = priorityInput.value;
+    const assignedTo = assigneeInput.value;
 
 
-memberFilter.addEventListener(
-    "change",
-    applyFilters
-);
+    /* التأكد من المشروع */
+    if (!projectId) {
 
+        alert("اختر المشروع أولاً");
 
-updateCounts();
-updateMemberFilter();
-function addActivity(message) {
+        projectInput.focus();
 
-    const activityLog =
-        document.getElementById("activityLog");
-
-    const emptyMessage =
-        activityLog.querySelector(".activity-empty");
-
-    if (emptyMessage) {
-        emptyMessage.remove();
+        return;
     }
 
-    const activity =
-        document.createElement("div");
 
-    activity.className = "activity-item";
+    /* التأكد من اسم المهمة */
+    if (!title) {
 
-    const time =
-        new Date().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit"
+        alert("اكتب اسم المهمة");
+
+        taskInput.focus();
+
+        return;
+    }
+
+
+    try {
+
+        const response = await fetch("/api/tasks", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+
+                project_id: Number(projectId),
+
+                title: title,
+
+                description: "",
+
+                priority: priority,
+
+                parent_id: null,
+
+                assigned_to:
+                    assignedTo
+                        ? Number(assignedTo)
+                        : null
+            })
         });
 
-    activity.innerHTML = `
-        <div class="activity-icon">
-            ✓
-        </div>
 
-        <div class="activity-text">
-            ${message}
-        </div>
+        const data = await response.json();
 
-        <div class="activity-time">
-            ${time}
-        </div>
-    `;
 
-    activityLog.prepend(activity);
+        if (!response.ok) {
+
+            alert(data.error || "حدث خطأ أثناء إضافة المهمة");
+
+            return;
+        }
+
+
+        /* تثبيت المشروع الحالي */
+        currentProjectId = Number(projectId);
+
+
+        /* تنظيف الحقول */
+        taskInput.value = "";
+
+        assigneeInput.value = "";
+
+
+        /* إعادة تحميل المهام */
+        await loadTasks();
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert("حدث خطأ في الاتصال بالسيرفر");
+    }
 }
-function saveTasks() {
 
-    const tasks = [];
 
-    document.querySelectorAll(".task").forEach(function(task) {
+/* تحميل المهام */
+async function loadTasks() {
 
-        tasks.push({
-            name: task.querySelector("strong").textContent,
+    if (!currentProjectId) {
+        return;
+    }
 
-            priority:
-                task.querySelector(".priority").classList[1],
+    try {
 
-            assignee:
-                task.querySelector(".assignee")
-                    .textContent
-                    .replace("👤", "")
-                    .trim(),
+        const response = await fetch(
+            `/api/projects/${currentProjectId}/tasks`
+        );
 
-            date:
-                task.querySelector(".due-date")
-                    .textContent
-                    .replace("📅", "")
-                    .trim(),
+        if (!response.ok) {
+            throw new Error("فشل تحميل المهام");
+        }
 
-            status:
-                task.querySelector(".task-status").value
+        const tasks = await response.json();
+
+        clearBoard();
+
+        tasks.forEach(function (task) {
+
+            addTaskToBoard(task);
         });
 
-    });
+        updateCounts();
 
-    localStorage.setItem(
-        "taskflow_tasks",
-        JSON.stringify(tasks)
-    );
+        loadActivity();
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert("لم يتم تحميل المهام");
+    }
 }
-function loadTasks() {
 
-    const savedTasks =
-        JSON.parse(localStorage.getItem("taskflow_tasks")) || [];
 
-    savedTasks.forEach(function(data) {
-
-        const task = document.createElement("div");
-        task.className = "task";
-
-        task.innerHTML = `
-            <div class="task-info">
-
-                <strong>${data.name}</strong>
-
-                <div class="task-details">
-
-                    <span class="priority ${data.priority}">
-                        ${data.priority.toUpperCase()}
-                    </span>
-
-                    <span class="assignee">
-                        👤 ${data.assignee}
-                    </span>
-
-                    <span class="due-date">
-                        📅 ${data.date}
-                    </span>
-
-                    <select class="task-status" onchange="changeTaskStatus(this)">
-                        <option value="todo">To Do</option>
-                        <option value="progress">In Progress</option>
-                        <option value="completed">Completed</option>
-                    </select>
-
-                </div>
-
-            </div>
-
-            <button class="delete-task" onclick="deleteTask(this)">
-                Delete
-            </button>
-        `;
-
-        task.querySelector(".task-status").value = data.status;
-
-        document
-            .querySelector(`.${data.status} .tasks`)
-            .appendChild(task);
-    });
-
-    updateCounts();
-    updateMemberFilter();
-    applyFilters();
-}
-loadTasks();
+/* إضافة المهمة إلى لوحة Kanban */

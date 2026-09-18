@@ -1,291 +1,396 @@
 <!DOCTYPE html>
+<html lang="ar" dir="rtl">
 
-<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TaskFlow - Kanban Board</title>
+
+    <title>TaskFlow - لوحة المهام</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-```
-<aside class="sidebar">
+    <!-- القائمة الجانبية -->
+    <aside class="sidebar">
 
-    <div class="logo">
-        <div class="logo-icon">T</div>
-        <div>
-            <h2>TaskFlow</h2>
-            <span>Project Manager</span>
-        </div>
-    </div>
-
-    <nav>
-        <p class="menu-title">MAIN MENU</p>
-
-        <a class="nav-item active">▦ <span>Kanban Board</span></a>
-        <a class="nav-item">◷ <span>My Tasks</span></a>
-        <a class="nav-item">▥ <span>Reports</span></a>
-        <a class="nav-item">⚙ <span>Settings</span></a>
-    </nav>
-
-    <div class="sidebar-bottom">
-        <div class="user-card">
-            <div class="avatar">A</div>
-            <div>
-                <strong>Project Member</strong>
-                <small>Team Member</small>
-            </div>
-        </div>
-    </div>
-
-</aside>
-
-
-<main class="main-content">
-
-    <header class="topbar">
-
-        <div>
-            <span class="breadcrumb">Workspace / Projects</span>
-            <h1>Kanban Board</h1>
-            <p>Manage your team's tasks and track project progress.</p>
-        </div>
-          
-        <button class="create-btn"
-            onclick="document.getElementById('taskInput').focus()">
-            + Create Task
-        </button>
-
-    </header>
-
-
-    <!-- STATISTICS -->
-
-    <section class="stats">
-
-        <div class="stat-card">
-            <div class="stat-icon purple">◫</div>
+        <div class="logo">
+            <div class="logo-icon">T</div>
 
             <div>
-                <span>Total Tasks</span>
-                <strong id="totalTasks">0</strong>
+                <h2>TaskFlow</h2>
+                <span>إدارة المشاريع</span>
             </div>
         </div>
 
+        <nav>
 
-        <div class="stat-card">
-            <div class="stat-icon orange">◷</div>
+            <p class="menu-title">القائمة الرئيسية</p>
 
-            <div>
-                <span>In Progress</span>
-                <strong id="progressTasks">0</strong>
+            <a class="nav-item active">
+                ▦
+                <span>لوحة المهام</span>
+            </a>
+
+            <a class="nav-item">
+                ◷
+                <span>مهامي</span>
+            </a>
+
+            <a class="nav-item">
+                ▥
+                <span>التقارير</span>
+            </a>
+
+            <a class="nav-item">
+                ⚙
+                <span>الإعدادات</span>
+            </a>
+
+        </nav>
+
+        <div class="sidebar-bottom">
+
+            <div class="user-card">
+
+                <div class="avatar">A</div>
+
+                <div>
+                    <strong>عضو المشروع</strong>
+                    <small>عضو في الفريق</small>
+                </div>
+
             </div>
+
         </div>
 
-
-        <div class="stat-card">
-            <div class="stat-icon green">✓</div>
-
-            <div>
-                <span>Completed</span>
-                <strong id="completedTasks">0</strong>
-            </div>
-        </div>
+    </aside>
 
 
-        <div class="stat-card">
-            <div class="stat-icon blue">↗</div>
+    <!-- المحتوى الرئيسي -->
+    <main class="main-content">
+
+        <!-- العنوان -->
+        <header class="topbar">
 
             <div>
-                <span>Completion</span>
-                <strong id="completionPercent">0%</strong>
+
+                <span class="breadcrumb">
+                    مساحة العمل / المشاريع
+                </span>
+
+                <h1>لوحة المهام</h1>
+
+                <p>
+                    إدارة مهام الفريق ومتابعة تقدم المشروع.
+                </p>
+
             </div>
-        </div>
 
-    </section>
+            <button
+                class="create-btn"
+                onclick="document.getElementById('taskInput').focus()">
+
+                + إضافة مهمة
+
+            </button>
+
+        </header>
 
 
-    <!-- SEARCH & FILTERS -->
+        <!-- الإحصائيات -->
+        <section class="stats">
 
-    <section class="toolbar">
+            <div class="stat-card">
 
-        <div class="search-box">
-            🔍
+                <div class="stat-icon purple">
+                    ◫
+                </div>
+
+                <div>
+                    <span>إجمالي المهام</span>
+                    <strong id="totalTasks">0</strong>
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon orange">
+                    ◷
+                </div>
+
+                <div>
+                    <span>قيد العمل</span>
+                    <strong id="progressTasks">0</strong>
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon green">
+                    ✓
+                </div>
+
+                <div>
+                    <span>المهام المنتهية</span>
+                    <strong id="completedTasks">0</strong>
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon blue">
+                    ↗
+                </div>
+
+                <div>
+                    <span>نسبة الإنجاز</span>
+                    <strong id="completionPercent">0%</strong>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- البحث والتصفية -->
+        <section class="toolbar">
+
+            <div class="search-box">
+
+                🔍
+
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="ابحث عن مهمة...">
+
+            </div>
+
+
+            <div class="filters">
+
+                <select id="priorityFilter">
+
+                    <option value="all">
+                        جميع الأولويات
+                    </option>
+
+                    <option value="منخفضة">
+                        أولوية منخفضة
+                    </option>
+
+                    <option value="متوسطة">
+                        أولوية متوسطة
+                    </option>
+
+                    <option value="عالية">
+                        أولوية عالية
+                    </option>
+
+                </select>
+
+
+                <select id="memberFilter">
+
+                    <option value="all">
+                        جميع الأعضاء
+                    </option>
+
+                </select>
+
+            </div>
+
+        </section>
+
+
+        <!-- إضافة مهمة -->
+        <section class="add-task-box">
+
+            <!-- المشروع -->
+            <select id="projectInput">
+
+                <option value="">
+                    اختر المشروع
+                </option>
+
+            </select>
+
+
+            <!-- اسم المهمة -->
             <input
                 type="text"
-                id="searchInput"
-                placeholder="Search tasks..."
-            >
-        </div>
-
-       <div class="filters">
-
-    <select id="priorityFilter">
-        <option value="all">All Tasks</option>
-        <option value="low">Low Priority</option>
-        <option value="medium">Medium Priority</option>
-        <option value="high">High Priority</option>
-    </select>
-
-    <select id="memberFilter">
-        <option value="all">All Members</option>
-    </select>
-
-</div>
-
-    </section>
+                id="taskInput"
+                placeholder="ما المهمة التي تريد إضافتها؟">
 
 
-    <!-- ADD TASK -->
+            <!-- الأولوية -->
+            <select id="priorityInput">
 
-    <section class="add-task-box">
+                <option value="منخفضة">
+                    أولوية منخفضة
+                </option>
 
-        <input
-            type="text"
-            id="taskInput"
-            placeholder="What needs to be done?"
-        >
+                <option value="متوسطة" selected>
+                    أولوية متوسطة
+                </option>
 
-        <select id="priorityInput">
+                <option value="عالية">
+                    أولوية عالية
+                </option>
 
-            <option value="low">
-                Low Priority
-            </option>
-
-            <option value="medium">
-                Medium Priority
-            </option>
-
-            <option value="high">
-                High Priority
-            </option>
-
-        </select>
+            </select>
 
 
-        <input
-            type="text"
-            id="assigneeInput"
-            placeholder="Assignee"
-        >
+            <!-- المسؤول -->
+            <select id="assigneeInput">
+
+                <option value="">
+                    اختر المسؤول
+                </option>
+
+            </select>
 
 
-        <input
-            type="date"
-            id="dateInput"
-        >
+            <button onclick="addTask()">
+                إضافة المهمة
+            </button>
+
+        </section>
 
 
-        <button onclick="addTask()">
-            Add Task
-        </button>
-
-    </section>
+        <!-- لوحة Kanban -->
+        <section class="board">
 
 
-    <!-- KANBAN BOARD -->
+            <!-- جديد -->
+            <div class="column todo">
 
-    <section class="board">
+                <div class="column-header">
 
+                    <div>
 
-        <!-- TO DO -->
+                        <span class="status-dot"></span>
 
-        <div class="column todo">
+                        <h2>جديد</h2>
 
-            <div class="column-header">
+                        <span class="count">0</span>
 
-                <div>
-                    <span class="status-dot"></span>
+                    </div>
 
-                    <h2>To Do</h2>
+                    <button>
+                        •••
+                    </button>
 
-                    <span class="count">0</span>
                 </div>
 
-                <button>•••</button>
+                <div class="tasks"></div>
 
             </div>
 
-            <div class="tasks"></div>
 
-        </div>
+            <!-- قيد العمل -->
+            <div class="column progress">
 
+                <div class="column-header">
 
-        <!-- IN PROGRESS -->
+                    <div>
 
-        <div class="column progress">
+                        <span class="status-dot"></span>
 
-            <div class="column-header">
+                        <h2>قيد العمل</h2>
 
-                <div>
-                    <span class="status-dot"></span>
+                        <span class="count">0</span>
 
-                    <h2>In Progress</h2>
+                    </div>
 
-                    <span class="count">0</span>
+                    <button>
+                        •••
+                    </button>
+
                 </div>
 
-                <button>•••</button>
+                <div class="tasks"></div>
 
             </div>
 
-            <div class="tasks"></div>
 
-        </div>
+            <!-- منتهي -->
+            <div class="column completed">
 
+                <div class="column-header">
 
-        <!-- COMPLETED -->
+                    <div>
 
-        <div class="column completed">
+                        <span class="status-dot"></span>
 
-            <div class="column-header">
+                        <h2>منتهي</h2>
 
-                <div>
-                    <span class="status-dot"></span>
+                        <span class="count">0</span>
 
-                    <h2>Completed</h2>
+                    </div>
 
-                    <span class="count">0</span>
+                    <button>
+                        •••
+                    </button>
+
                 </div>
 
-                <button>•••</button>
+                <div class="tasks"></div>
 
             </div>
 
-            <div class="tasks"></div>
-
-        </div>
+        </section>
 
 
-    </section>
-    <!-- ACTIVITY LOG -->
+        <!-- سجل النشاط -->
+        <section class="activity-section">
 
-<section class="activity-section">
+            <div class="activity-header">
 
-    <div class="activity-header">
-        <div>
-            <span class="breadcrumb">Recent Activity</span>
-            <h2>Activity Log</h2>
-        </div>
-    </div>
+                <div>
 
-    <div id="activityLog" class="activity-log">
+                    <span class="breadcrumb">
+                        آخر النشاطات
+                    </span>
 
-        <div class="activity-empty">
-            No activity yet.
-        </div>
+                    <h2>
+                        سجل النشاط
+                    </h2>
 
-    </div>
+                </div>
 
-</section>
-
-</main>
+            </div>
 
 
-<script src="script.js"></script>
-```
+            <div
+                id="activityLog"
+                class="activity-log">
+
+                <div class="activity-empty">
+                    لا يوجد نشاط حتى الآن.
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <script src="script.js"></script>
 
 </body>
+
 </html>

@@ -5,21 +5,20 @@
 }
 
 body {
-    font-family: Arial, sans-serif;
-    background: #f7f8fc;
-    color: #20212c;
+    font-family: "Cairo", Arial, sans-serif;
+    background: #15151f;
+    color: #ffffff;
     display: flex;
     min-height: 100vh;
 }
 
 
-/* SIDEBAR */
+/* القائمة الجانبية */
 
 .sidebar {
-    width: 250px;
-    background: #15151f;
-    color: white;
-    padding: 28px 18px;
+    width: 240px;
+    background: #101018;
+    padding: 25px 18px;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -28,19 +27,19 @@ body {
 .logo {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 0 10px 35px;
+    gap: 10px;
+    padding: 0 8px 30px;
 }
 
 .logo-icon {
     width: 42px;
     height: 42px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #7657ff, #9b7cff);
+    border-radius: 10px;
+    background: #7657ff;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 21px;
+    font-size: 20px;
     font-weight: bold;
 }
 
@@ -49,28 +48,25 @@ body {
 }
 
 .logo span {
-    font-size: 11px;
     color: #888897;
+    font-size: 11px;
 }
 
 .menu-title {
     color: #686879;
     font-size: 10px;
-    font-weight: bold;
-    padding: 0 14px 12px;
-    letter-spacing: 1px;
+    padding: 0 12px 10px;
 }
 
 .nav-item {
     display: flex;
     align-items: center;
-    gap: 13px;
-    padding: 13px 15px;
-    margin-bottom: 6px;
-    border-radius: 10px;
+    gap: 12px;
+    padding: 12px;
+    margin-bottom: 5px;
+    border-radius: 8px;
     color: #9999a9;
     text-decoration: none;
-    cursor: pointer;
 }
 
 .nav-item.active {
@@ -89,7 +85,7 @@ body {
 
 .user-card {
     border-top: 1px solid #292934;
-    padding: 20px 8px 0;
+    padding: 18px 8px 0;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -115,12 +111,12 @@ body {
 }
 
 
-/* MAIN */
+/* المحتوى الرئيسي */
 
 .main-content {
     flex: 1;
-    padding: 35px 42px;
-    overflow: hidden;
+    padding: 30px 40px;
+    overflow: auto;
 }
 
 .topbar {
@@ -135,8 +131,8 @@ body {
 }
 
 h1 {
-    font-size: 30px;
-    margin: 8px 0;
+    font-size: 28px;
+    margin: 6px 0;
 }
 
 .topbar p {
@@ -148,72 +144,65 @@ h1 {
     background: #7657ff;
     color: white;
     border: none;
-    padding: 13px 20px;
-    border-radius: 9px;
+    padding: 12px 18px;
+    border-radius: 8px;
     font-weight: bold;
     cursor: pointer;
-    box-shadow: 0 7px 20px rgba(118, 87, 255, 0.2);
-}
-
-.create-btn:hover {
-    transform: translateY(-2px);
 }
 
 
-/* STATS */
+/* الإحصائيات */
 
 .stats {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 15px;
-    margin: 30px 0 25px;
+    margin: 25px 0;
 }
 
 .stat-card {
-    background: white;
-    border: 1px solid #ececf2;
-    border-radius: 13px;
-    padding: 18px;
+    background: #20202b;
+    border: 1px solid #30303c;
+    border-radius: 12px;
+    padding: 17px;
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
 }
 
 .stat-icon {
-    width: 42px;
-    height: 42px;
-    border-radius: 11px;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 19px;
 }
 
 .purple {
-    background: #eeeaff;
-    color: #7657ff;
+    background: #30295a;
+    color: #9b7cff;
 }
 
 .orange {
-    background: #fff1df;
-    color: #ed8a24;
+    background: #4a3622;
+    color: #f19a39;
 }
 
 .green {
-    background: #e5f8ef;
-    color: #2daa70;
+    background: #234536;
+    color: #31b879;
 }
 
 .blue {
-    background: #e6f1ff;
+    background: #263d58;
     color: #438be8;
 }
 
 .stat-card span {
     display: block;
-    color: #90919d;
+    color: #999aa7;
     font-size: 11px;
-    margin-bottom: 5px;
 }
 
 .stat-card strong {
@@ -221,27 +210,33 @@ h1 {
 }
 
 
-/* TOOLBAR */
+/* البحث والفلاتر */
 
 .toolbar {
     display: flex;
     justify-content: space-between;
+    gap: 15px;
     margin-bottom: 15px;
 }
 
 .search-box {
-    background: white;
-    border: 1px solid #e8e8ef;
-    border-radius: 9px;
+    background: #20202b;
+    border: 1px solid #30303c;
+    border-radius: 8px;
     padding: 10px 14px;
     width: 280px;
-    color: #999;
 }
 
 .search-box input {
+    background: transparent;
+    color: white;
     border: none;
     outline: none;
-    margin-left: 8px;
+    margin-right: 8px;
+}
+
+.search-box input::placeholder {
+    color: #777787;
 }
 
 .filters {
@@ -249,16 +244,24 @@ h1 {
     gap: 8px;
 }
 
-.filters button {
-    background: white;
-    border: 1px solid #e8e8ef;
-    padding: 9px 13px;
+
+/* الحقول والأزرار */
+
+select,
+.add-task-box input {
+    background: #20202b;
+    color: white;
+    border: 1px solid #30303c;
     border-radius: 8px;
-    color: #666774;
+    padding: 11px;
+    outline: none;
+    font-family: inherit;
 }
 
-
-/* ADD TASK */
+select option {
+    background: #20202b;
+    color: white;
+}
 
 .add-task-box {
     display: flex;
@@ -268,23 +271,20 @@ h1 {
 
 .add-task-box input {
     flex: 1;
-    padding: 13px;
-    border: 1px solid #e5e5ec;
-    border-radius: 9px;
-    outline: none;
 }
 
 .add-task-box button {
-    background: #20202b;
+    background: #7657ff;
     color: white;
     border: none;
     padding: 0 20px;
-    border-radius: 9px;
+    border-radius: 8px;
     cursor: pointer;
+    font-family: inherit;
 }
 
 
-/* BOARD */
+/* لوحة Kanban */
 
 .board {
     display: grid;
@@ -293,23 +293,24 @@ h1 {
 }
 
 .column {
-    background: #eef0f5;
-    border-radius: 13px;
-    padding: 17px;
-    min-height: 430px;
+    background: #20202b;
+    border: 1px solid #30303c;
+    border-radius: 12px;
+    padding: 16px;
+    min-height: 420px;
 }
 
 .column-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 17px;
+    margin-bottom: 16px;
 }
 
 .column-header > div {
     display: flex;
     align-items: center;
-    gap: 9px;
+    gap: 8px;
 }
 
 .column-header h2 {
@@ -319,7 +320,7 @@ h1 {
 .column-header button {
     border: none;
     background: transparent;
-    color: #999;
+    color: #777787;
 }
 
 .status-dot {
@@ -338,55 +339,117 @@ h1 {
 }
 
 .count {
-    background: white;
-    padding: 3px 8px;
-    border-radius: 20px;
+    background: #30303c;
+    padding: 2px 7px;
+    border-radius: 15px;
     font-size: 10px;
-    color: #777;
+    color: #aaa;
 }
 
 
-/* TASK */
+/* بطاقة المهمة */
 
 .task {
-    background: white;
-    border: 1px solid #e8e8ee;
-    border-radius: 11px;
-    padding: 15px;
-    margin-bottom: 12px;
-    box-shadow: 0 3px 10px rgba(20, 20, 40, 0.03);
+    background: #292936;
+    border: 1px solid #383846;
+    border-radius: 10px;
+    padding: 13px;
+    margin-bottom: 10px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 10px;
 }
 
-.task span {
+.task strong {
+    display: block;
+    margin-bottom: 8px;
     font-size: 13px;
-    font-weight: 600;
 }
 
-.task button {
-    background: #fff0f0;
-    color: #e05252;
+.task-details {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.task-details span {
+    font-size: 11px;
+}
+
+.priority {
+    color: #9b7cff;
+}
+
+.assignee {
+    color: #aaa;
+}
+
+.task-status {
+    padding: 5px 7px;
+    font-size: 10px;
+}
+
+.delete-task {
+    background: #4a2929;
+    color: #ff7777;
     border: none;
     padding: 6px 8px;
     border-radius: 6px;
     cursor: pointer;
 }
 
-.task:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 7px 18px rgba(20, 20, 40, 0.07);
+
+/* سجل النشاط */
+
+.activity-section {
+    margin-top: 25px;
+    background: #20202b;
+    border: 1px solid #30303c;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.activity-header {
+    margin-bottom: 15px;
+}
+
+.activity-header h2 {
+    margin-top: 5px;
+    font-size: 18px;
+}
+
+.activity-log {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.activity-item {
+    padding: 12px;
+    border-radius: 8px;
+    background: #292936;
+    color: #ccc;
+    font-size: 13px;
+}
+
+.activity-empty {
+    color: #777787;
+    font-size: 13px;
 }
 
 
-/* RESPONSIVE */
+/* الشاشات الصغيرة */
 
 @media (max-width: 1000px) {
 
     .sidebar {
         width: 190px;
+    }
+
+    .main-content {
+        padding: 25px;
     }
 
     .stats {
@@ -397,64 +460,19 @@ h1 {
         grid-template-columns: 1fr;
     }
 }
-/* ACTIVITY LOG */
 
-.activity-section {
-    margin-top: 30px;
-    background: #ffffff;
-    border-radius: 16px;
-    padding: 24px;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
-}
+@media (max-width: 700px) {
 
-.activity-header {
-    margin-bottom: 20px;
-}
+    .sidebar {
+        display: none;
+    }
 
-.activity-header h2 {
-    margin: 6px 0 0;
-    font-size: 20px;
-}
+    .toolbar,
+    .add-task-box {
+        flex-direction: column;
+    }
 
-.activity-log {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.activity-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 14px;
-    border-radius: 10px;
-    background: #f8f9fc;
-}
-
-.activity-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #eeeaff;
-    font-size: 16px;
-}
-
-.activity-text {
-    font-size: 14px;
-    color: #333;
-}
-
-.activity-time {
-    margin-left: auto;
-    font-size: 12px;
-    color: #999;
-}
-
-.activity-empty {
-    color: #999;
-    font-size: 14px;
-    padding: 10px 0;
+    .search-box {
+        width: 100%;
+    }
 }
