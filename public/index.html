@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>TaskFlow - لوحة المهام</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- القائمة الجانبية -->
+    <aside class="sidebar">
+
+        <div class="logo">
+            <div class="logo-icon">T</div>
+
+            <div>
+                <h2>TaskFlow</h2>
+                <span>إدارة المشاريع</span>
+            </div>
+        </div>
+
+        <nav>
+
+            <p class="menu-title">القائمة الرئيسية</p>
+
+            <a class="nav-item active">
+                ▦
+                <span>لوحة المهام</span>
+            </a>
+
+            <a class="nav-item">
+                ◷
+                <span>مهامي</span>
+            </a>
+
+            <a class="nav-item">
+                ▥
+                <span>التقارير</span>
+            </a>
+
+            <a class="nav-item">
+                ⚙
+                <span>الإعدادات</span>
+            </a>
+
+        </nav>
+
+        <div class="sidebar-bottom">
+
+            <div class="user-card">
+
+                <div class="avatar">A</div>
+
+                <div>
+                    <strong>عضو المشروع</strong>
+                    <small>عضو في الفريق</small>
+                </div>
+
+            </div>
+
+        </div>
+
+    </aside>
+
+
+    <!-- المحتوى الرئيسي -->
+    <main class="main-content">
+
+        <!-- العنوان -->
+        <header class="topbar">
+
+            <div>
+
+                <span class="breadcrumb">
+                    مساحة العمل / المشاريع
+                </span>
+
+                <h1>لوحة المهام</h1>
+
+                <p>
+                    إدارة مهام الفريق ومتابعة تقدم المشروع.
+                </p>
+
+            </div>
+
+            <button
+                class="create-btn"
+                onclick="document.getElementById('taskInput').focus()">
+
+                + إضافة مهمة
+
+            </button>
+
+        </header>
+
+
+        <!-- الإحصائيات -->
+        <section class="stats">
+
+            <div class="stat-card">
+
+                <div class="stat-icon purple">
+                    ◫
+                </div>
+
+                <div>
+                    <span>إجمالي المهام</span>
+                    <strong id="totalTasks">0</strong>
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon orange">
+                    ◷
+                </div>
+
+                <div>
+                    <span>قيد العمل</span>
+                    <strong id="progressTasks">0</strong>
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon green">
+                    ✓
+                </div>
+
+                <div>
+                    <span>المهام المنتهية</span>
+                    <strong id="completedTasks">0</strong>
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon blue">
+                    ↗
+                </div>
+
+                <div>
+                    <span>نسبة الإنجاز</span>
+                    <strong id="completionPercent">0%</strong>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- البحث والتصفية -->
+        <section class="toolbar">
+
+            <div class="search-box">
+
+                🔍
+
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="ابحث عن مهمة...">
+
+            </div>
+
+
+            <div class="filters">
+
+                <select id="priorityFilter">
+
+                    <option value="all">
+                        جميع الأولويات
+                    </option>
+
+                    <option value="منخفضة">
+                        أولوية منخفضة
+                    </option>
+
+                    <option value="متوسطة">
+                        أولوية متوسطة
+                    </option>
+
+                    <option value="عالية">
+                        أولوية عالية
+                    </option>
+
+                </select>
+
+
+                <select id="memberFilter">
+
+                    <option value="all">
+                        جميع الأعضاء
+                    </option>
+
+                </select>
+
+            </div>
+
+        </section>
+
+
+        <!-- إضافة مهمة -->
+        <section class="add-task-box">
+
+            <!-- المشروع -->
+            <select id="projectInput">
+
+                <option value="">
+                    اختر المشروع
+                </option>
+
+            </select>
+
+
+            <!-- اسم المهمة -->
+            <input
+                type="text"
+                id="taskInput"
+                placeholder="ما المهمة التي تريد إضافتها؟">
+
+
+            <!-- الأولوية -->
+            <select id="priorityInput">
+
+                <option value="منخفضة">
+                    أولوية منخفضة
+                </option>
+
+                <option value="متوسطة" selected>
+                    أولوية متوسطة
+                </option>
+
+                <option value="عالية">
+                    أولوية عالية
+                </option>
+
+            </select>
+
+
+            <!-- المسؤول -->
+            <select id="assigneeInput">
+
+                <option value="">
+                    اختر المسؤول
+                </option>
+
+            </select>
+
+
+            <button onclick="addTask()">
+                إضافة المهمة
+            </button>
+
+        </section>
+
+
+        <!-- لوحة Kanban -->
+        <section class="board">
+
+
+            <!-- جديد -->
+            <div class="column todo">
+
+                <div class="column-header">
+
+                    <div>
+
+                        <span class="status-dot"></span>
+
+                        <h2>جديد</h2>
+
+                        <span class="count">0</span>
+
+                    </div>
+
+                    <button>
+                        •••
+                    </button>
+
+                </div>
+
+                <div class="tasks"></div>
+
+            </div>
+
+
+            <!-- قيد العمل -->
+            <div class="column progress">
+
+                <div class="column-header">
+
+                    <div>
+
+                        <span class="status-dot"></span>
+
+                        <h2>قيد العمل</h2>
+
+                        <span class="count">0</span>
+
+                    </div>
+
+                    <button>
+                        •••
+                    </button>
+
+                </div>
+
+                <div class="tasks"></div>
+
+            </div>
+
+
+            <!-- منتهي -->
+            <div class="column completed">
+
+                <div class="column-header">
+
+                    <div>
+
+                        <span class="status-dot"></span>
+
+                        <h2>منتهي</h2>
+
+                        <span class="count">0</span>
+
+                    </div>
+
+                    <button>
+                        •••
+                    </button>
+
+                </div>
+
+                <div class="tasks"></div>
+
+            </div>
+
+        </section>
+
+
+        <!-- سجل النشاط -->
+        <section class="activity-section">
+
+            <div class="activity-header">
+
+                <div>
+
+                    <span class="breadcrumb">
+                        آخر النشاطات
+                    </span>
+
+                    <h2>
+                        سجل النشاط
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="activityLog"
+                class="activity-log">
+
+                <div class="activity-empty">
+                    لا يوجد نشاط حتى الآن.
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>
