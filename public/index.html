@@ -1,861 +1,396 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TaskFlow - نظام إدارة المشاريع والمهام</title>
+
+    <title>TaskFlow - لوحة المهام</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #3b82f6;
-            --primary-hover: #2563eb;
-            --primary-glow: rgba(59, 130, 246, 0.25);
-            --bg: #0b0f19;
-            --surface: #131d31;
-            --surface-card: #18233c;
-            --surface-hover: #1e2d4d;
-            --border: #233354;
-            --border-light: #2d416b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 16px;
-            --shadow-sm: 0 4px 10px -2px rgba(0, 0, 0, 0.3);
-            --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
-            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Cairo', sans-serif;
-        }
-
-        body {
-            background-color: var(--bg);
-            color: var(--text-main);
-            min-height: 100vh;
-            padding: 40px 20px;
-            line-height: 1.6;
-        }
-
-        .container {
-            max-width: 1080px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: 28px;
-        }
-
-        /* Header */
-        header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding-bottom: 24px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .brand h1 {
-            font-size: 2rem;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            background: linear-gradient(135deg, #60a5fa 20%, #c084fc 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .brand p {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-            margin-top: 4px;
-        }
-
-        .stats-badge {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            padding: 8px 18px;
-            border-radius: 9999px;
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .stats-badge span {
-            color: var(--primary);
-            font-weight: 800;
-            font-size: 1.05rem;
-        }
-
-        /* Cards */
-        .card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: 28px;
-            box-shadow: var(--shadow-md);
-        }
-
-        .card-header {
-            margin-bottom: 24px;
-        }
-
-        .card-header h2 {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--text-main);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .card-header p {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            margin-top: 4px;
-        }
-
-        /* Form */
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 18px;
-        }
-
-        .form-group-full {
-            grid-column: 1 / -1;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 0.88rem;
-            color: var(--text-muted);
-            font-weight: 600;
-        }
-
-        input, textarea, select {
-            width: 100%;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 12px 16px;
-            color: var(--text-main);
-            font-size: 0.95rem;
-            outline: none;
-            transition: var(--transition);
-        }
-
-        input:focus, textarea:focus, select:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px var(--primary-glow);
-            background: #0e1422;
-        }
-
-        select option {
-            background-color: var(--surface);
-            color: var(--text-main);
-        }
-
-        /* Buttons */
-        .btn-primary {
-            cursor: pointer;
-            border: none;
-            border-radius: var(--radius-sm);
-            padding: 12px 24px;
-            font-weight: 700;
-            font-size: 0.95rem;
-            background: var(--primary);
-            color: #ffffff;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin-top: 14px;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.45);
-        }
-
-        .btn-primary:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        /* Notice Banner */
-        .subtask-banner {
-            background: rgba(59, 130, 246, 0.12);
-            border: 1px solid rgba(59, 130, 246, 0.3);
-            border-radius: var(--radius-sm);
-            padding: 12px 16px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 0.92rem;
-            color: #93c5fd;
-        }
-
-        .subtask-banner button {
-            background: rgba(239, 68, 68, 0.15);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: #fca5a5;
-            padding: 4px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: var(--transition);
-        }
-
-        .subtask-banner button:hover {
-            background: var(--danger);
-            color: white;
-        }
-
-        /* Projects Section */
-        .section-title {
-            font-size: 1.35rem;
-            font-weight: 700;
-            color: var(--text-main);
-            margin-bottom: 8px;
-        }
-
-        .projects-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
-            gap: 20px;
-        }
-
-        .project-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            padding: 22px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .project-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, var(--primary), #a855f7);
-            opacity: 0;
-            transition: var(--transition);
-        }
-
-        .project-card:hover {
-            transform: translateY(-4px);
-            border-color: var(--border-light);
-            box-shadow: var(--shadow-md);
-        }
-
-        .project-card:hover::before {
-            opacity: 1;
-        }
-
-        .project-title {
-            font-size: 1.15rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-            color: var(--text-main);
-        }
-
-        .project-desc {
-            color: var(--text-muted);
-            font-size: 0.88rem;
-            line-height: 1.55;
-            margin-bottom: 18px;
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .project-meta {
-            background: rgba(11, 15, 25, 0.5);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 12px;
-            font-size: 0.82rem;
-            color: var(--text-muted);
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        /* Tasks Hierarchy Nodes */
-        .task-node {
-            background: var(--surface-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            padding: 16px;
-            transition: var(--transition);
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .task-node:hover {
-            border-color: var(--border-light);
-            background: var(--surface-hover);
-        }
-
-        .task-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .priority-badge {
-            font-size: 0.72rem;
-            font-weight: 700;
-            padding: 3px 10px;
-            border-radius: 9999px;
-            letter-spacing: 0.3px;
-        }
-
-        .subtasks-wrapper {
-            margin-top: 6px;
-            padding-right: 18px;
-            border-right: 2px dashed var(--border-light);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .subtask-node {
-            background: rgba(11, 15, 25, 0.6);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 10px 14px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .btn-action-sm {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            color: var(--text-muted);
-            padding: 5px 12px;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            font-weight: 600;
-            transition: var(--transition);
-        }
-
-        .btn-action-sm:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-        }
-
-        .btn-delete-sm {
-            background: transparent;
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: #ef4444;
-            font-size: 0.8rem;
-            cursor: pointer;
-            font-weight: 600;
-            padding: 4px 10px;
-            border-radius: 6px;
-            transition: var(--transition);
-        }
-
-        .btn-delete-sm:hover {
-            background: rgba(239, 68, 68, 0.15);
-            border-color: #ef4444;
-        }
-
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text-muted);
-            background: rgba(11, 15, 25, 0.4);
-            border: 1px dashed var(--border);
-            border-radius: var(--radius-md);
-            grid-column: 1 / -1;
-            font-size: 0.92rem;
-        }
-
-        /* Toast */
-        .toast {
-            position: fixed;
-            bottom: 28px;
-            left: 28px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            padding: 14px 22px;
-            border-radius: var(--radius-sm);
-            font-size: 0.92rem;
-            font-weight: 600;
-            box-shadow: var(--shadow-md);
-            transform: translateY(100px);
-            opacity: 0;
-            transition: var(--transition);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .toast.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        .toast.success { border-color: var(--success); color: var(--success); }
-        .toast.error { border-color: var(--danger); color: var(--danger); }
-
-        @media (max-width: 680px) {
-            .form-grid { grid-template-columns: 1fr; }
-            header { flex-direction: column; align-items: flex-start; gap: 16px; }
-            body { padding: 20px 14px; }
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-    <div class="container">
-        <!-- Header -->
-        <header>
-            <div class="brand">
-                <h1>TaskFlow Workspace</h1>
-                <p>نظام متكامل لإدارة المشاريع ومتابعة تسلسل المهام البرمجية</p>
-            </div>
-            <div class="stats-badge">
-                إجمالي المشاريع: <span id="projectCount">0</span>
-            </div>
-        </header>
 
-        <!-- Project Form -->
-        <section class="card">
-            <div class="card-header">
-                <h2>📁 إنشاء مشروع جديد</h2>
-                <p>سجل تفاصيل المشروع وحدد الإطار الزمني لتوزيع المهام</p>
-            </div>
-            <form id="projectForm">
-                <div class="form-grid">
-                    <div class="form-group-full">
-                        <label for="name">اسم المشروع *</label>
-                        <input type="text" id="name" required placeholder="مثال: منصة التسوق الرقمي">
-                    </div>
-                    <div class="form-group-full">
-                        <label for="description">وصف موجز للمشروع</label>
-                        <textarea id="description" rows="3" placeholder="اكتب نبذة عن أهداف ونطاق عمل المشروع..."></textarea>
-                    </div>
-                    <div>
-                        <label for="start_date">تاريخ الانطلاق *</label>
-                        <input type="date" id="start_date" required>
-                    </div>
-                    <div>
-                        <label for="expected_end_date">الموعد النهائي المتوقع *</label>
-                        <input type="date" id="expected_end_date" required>
-                    </div>
-                </div>
-                <button type="submit" id="submitBtn" class="btn-primary">
-                    <span>حفظ وإنشاء المشروع</span>
-                </button>
-            </form>
-        </section>
+    <!-- القائمة الجانبية -->
+    <aside class="sidebar">
 
-        <!-- Tasks Form -->
-        <section class="card">
-            <div class="card-header">
-                <h2>📌 إدارة المهام والتسلسل الهرمي</h2>
-                <p>إضافة المهام الرئيسية وتقسيمها إلى مهام فرعية تابعة مع تحديد الأولويات</p>
-            </div>
+        <div class="logo">
+            <div class="logo-icon">T</div>
 
-            <form id="taskForm">
-                <input type="hidden" id="task_parent_id" value="">
-
-                <div id="parentTaskNotice" class="subtask-banner" style="display: none;">
-                    <span>جاري إضافة مهمة فرعية تابعة لـ: <strong id="parentTaskTitle"></strong></span>
-                    <button type="button" id="cancelSubTaskBtn">إلغاء التبعية</button>
-                </div>
-
-                <div class="form-grid">
-                    <div>
-                        <label for="task_project_id">المشروع التابع له *</label>
-                        <select id="task_project_id" required></select>
-                    </div>
-                    <div>
-                        <label for="task_priority">أولوية المهمة *</label>
-                        <select id="task_priority" required>
-                            <option value="منخفضة">منخفضة</option>
-                            <option value="متوسطة" selected>متوسطة</option>
-                            <option value="عالية">عالية</option>
-                        </select>
-                    </div>
-                    <div class="form-group-full">
-                        <label for="task_title">عنوان المهمة *</label>
-                        <input type="text" id="task_title" required placeholder="مثال: إعداد بنية قاعدة البيانات">
-                    </div>
-                    <div class="form-group-full">
-                        <label for="task_description">تفاصيل المهمة</label>
-                        <textarea id="task_description" rows="2" placeholder="اكتب متطلبات وشروط تنفيذ المهمة..."></textarea>
-                    </div>
-                </div>
-                <button type="submit" id="taskSubmitBtn" class="btn-primary">
-                    <span>إضافة المهمة</span>
-                </button>
-            </form>
-
-            <div style="margin-top: 32px;">
-                <h3 style="margin-bottom: 14px; font-size: 1.1rem; color: var(--text-main);">شجرة المهام للمشروع المحدد</h3>
-                <div id="tasksHierarchyContainer" style="display: flex; flex-direction: column; gap: 14px;">
-                    <div class="empty-state">اختر مشروعاً لمعاينة المهام المرتبطة به</div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Projects Grid -->
-        <div>
-            <h2 class="section-title">المشاريع الحالية</h2>
-            <div id="projectsList" class="projects-grid">
-                <div class="empty-state">جارٍ جلب المشاريع...</div>
+            <div>
+                <h2>TaskFlow</h2>
+                <span>إدارة المشاريع</span>
             </div>
         </div>
-    </div>
 
-    <div id="toast" class="toast"></div>
+        <nav>
 
-    <script>
-        const projectForm = document.getElementById('projectForm');
-        const submitBtn = document.getElementById('submitBtn');
-        const projectsList = document.getElementById('projectsList');
-        const projectCount = document.getElementById('projectCount');
-        const toast = document.getElementById('toast');
+            <p class="menu-title">القائمة الرئيسية</p>
 
-        const taskForm = document.getElementById('taskForm');
-        const taskSubmitBtn = document.getElementById('taskSubmitBtn');
-        const taskProjectId = document.getElementById('task_project_id');
-        const taskPriority = document.getElementById('task_priority');
-        const taskTitle = document.getElementById('task_title');
-        const taskDescription = document.getElementById('task_description');
-        const taskParentId = document.getElementById('task_parent_id');
-        const parentTaskNotice = document.getElementById('parentTaskNotice');
-        const parentTaskTitle = document.getElementById('parentTaskTitle');
-        const cancelSubTaskBtn = document.getElementById('cancelSubTaskBtn');
-        const tasksHierarchyContainer = document.getElementById('tasksHierarchyContainer');
+            <a class="nav-item active">
+                ▦
+                <span>لوحة المهام</span>
+            </a>
 
-        const priorityConfig = {
-            'عالية': { bg: 'rgba(239, 68, 68, 0.15)', color: '#f87171', border: '#ef4444' },
-            'متوسطة': { bg: 'rgba(245, 158, 11, 0.15)', color: '#fbbf24', border: '#f59e0b' },
-            'منخفضة': { bg: 'rgba(16, 185, 129, 0.15)', color: '#34d399', border: '#10b981' }
-        };
+            <a class="nav-item">
+                ◷
+                <span>مهامي</span>
+            </a>
 
-        function showNotification(message, type = 'success') {
-            toast.textContent = message;
-            toast.className = `toast show ${type}`;
-            setTimeout(() => {
-                toast.className = 'toast';
-            }, 3500);
-        }
+            <a class="nav-item">
+                ▥
+                <span>التقارير</span>
+            </a>
 
-        async function loadProjects() {
-            try {
-                const res = await fetch('/api/projects');
-                if (!res.ok) throw new Error('فشل جلب المشاريع من السيرفر');
-                const projects = await res.json();
+            <a class="nav-item">
+                ⚙
+                <span>الإعدادات</span>
+            </a>
 
-                projectCount.textContent = projects.length;
+        </nav>
 
-                if (projects.length === 0) {
-                    projectsList.innerHTML = `
-                        <div class="empty-state">
-                            <p>لا توجد مشاريع مضافة حالياً. ابدأ بإضافة مشروعك الأول أعلاه!</p>
-                        </div>
-                    `;
-                    return;
-                }
+        <div class="sidebar-bottom">
 
-                projectsList.innerHTML = projects.map(p => `
-                    <article class="project-card">
-                        <div>
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
-                                <h3 class="project-title">${escapeHtml(p.name)}</h3>
-                                <button type="button" class="btn-delete-sm" onclick="deleteProject(${p.id})">حذف</button>
-                            </div>
-                            <p class="project-desc">${p.description ? escapeHtml(p.description) : 'لا يتوفر وصف لهذا المشروع.'}</p>
-                        </div>
-                        <div class="project-meta">
-                            <div><strong>تاريخ البدء:</strong> ${p.start_date}</div>
-                            <div><strong>تاريخ التسليم:</strong> ${p.expected_end_date}</div>
-                        </div>
-                    </article>
-                `).join('');
-            } catch (err) {
-                projectsList.innerHTML = `<div class="empty-state">${err.message}</div>`;
-            }
-        }
+            <div class="user-card">
 
-        window.deleteProject = async function(id) {
-            if (!confirm('هل أنت متأكد من حذف هذا المشروع؟ سيتم حذف جميع المهام التابعة له بشكل نهائي.')) return;
-            try {
-                const res = await fetch(`/api/projects/${id}`, { method: 'DELETE' });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.error || 'فشل حذف المشروع');
+                <div class="avatar">A</div>
 
-                showNotification('تم حذف المشروع بنجاح');
-                await loadProjects();
-                await populateProjectSelect();
-            } catch (err) {
-                showNotification(err.message, 'error');
-            }
-        };
+                <div>
+                    <strong>عضو المشروع</strong>
+                    <small>عضو في الفريق</small>
+                </div>
 
-        async function populateProjectSelect() {
-            try {
-                const res = await fetch('/api/projects');
-                const projects = await res.json();
-                if (taskProjectId) {
-                    if (projects.length === 0) {
-                        taskProjectId.innerHTML = '<option value="">لا توجد مشاريع - أنشئ مشروعاً أولاً</option>';
-                        tasksHierarchyContainer.innerHTML = '<div class="empty-state">لا توجد مشاريع حالياً.</div>';
-                        return;
-                    }
-                    const previousSelection = taskProjectId.value;
-                    taskProjectId.innerHTML = projects.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
-                    if (previousSelection && projects.some(p => p.id == previousSelection)) {
-                        taskProjectId.value = previousSelection;
-                    }
-                    loadTasks(taskProjectId.value);
-                }
-            } catch (e) {
-                console.error(e);
-            }
-        }
+            </div>
 
-        projectForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
+        </div>
 
-            const startDate = document.getElementById('start_date').value;
-            const endDate = document.getElementById('expected_end_date').value;
+    </aside>
 
-            if (new Date(endDate) < new Date(startDate)) {
-                showNotification('تاريخ النهاية لا يمكن أن يكون قبل تاريخ البداية', 'error');
-                return;
-            }
 
-            submitBtn.disabled = true;
-            submitBtn.querySelector('span').textContent = 'جارٍ الحفظ...';
+    <!-- المحتوى الرئيسي -->
+    <main class="main-content">
 
-            const payload = {
-                name: document.getElementById('name').value.trim(),
-                description: document.getElementById('description').value.trim(),
-                start_date: startDate,
-                expected_end_date: endDate
-            };
+        <!-- العنوان -->
+        <header class="topbar">
 
-            try {
-                const res = await fetch('/api/projects', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+            <div>
 
-                const data = await res.json();
+                <span class="breadcrumb">
+                    مساحة العمل / المشاريع
+                </span>
 
-                if (!res.ok) {
-                    throw new Error(data.error || 'فشل حفظ المشروع في قاعدة البيانات');
-                }
+                <h1>لوحة المهام</h1>
 
-                projectForm.reset();
-                showNotification('تمت إضافة المشروع بنجاح!');
-                await loadProjects();
-                await populateProjectSelect();
-            } catch (err) {
-                showNotification(err.message, 'error');
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.querySelector('span').textContent = 'حفظ وإنشاء المشروع';
-            }
-        });
+                <p>
+                    إدارة مهام الفريق ومتابعة تقدم المشروع.
+                </p>
 
-        if (cancelSubTaskBtn) {
-            cancelSubTaskBtn.addEventListener('click', () => {
-                taskParentId.value = '';
-                parentTaskNotice.style.display = 'none';
-            });
-        }
+            </div>
 
-        if (taskProjectId) {
-            taskProjectId.addEventListener('change', () => {
-                taskParentId.value = '';
-                parentTaskNotice.style.display = 'none';
-                loadTasks(taskProjectId.value);
-            });
-        }
+            <button
+                class="create-btn"
+                onclick="document.getElementById('taskInput').focus()">
 
-        async function loadTasks(projectId) {
-            if (!projectId || !tasksHierarchyContainer) return;
-            try {
-                const res = await fetch(`/api/projects/${projectId}/tasks`);
-                if (!res.ok) throw new Error();
-                const tasks = await res.json();
-                renderTasksTree(tasks);
-            } catch (err) {
-                tasksHierarchyContainer.innerHTML = '<div class="empty-state">فشل جلب المهام لهذا المشروع.</div>';
-            }
-        }
+                + إضافة مهمة
 
-        function renderTasksTree(tasks) {
-            if (!tasksHierarchyContainer) return;
-            if (!tasks || tasks.length === 0) {
-                tasksHierarchyContainer.innerHTML = '<div class="empty-state">لا توجد مهام مضافة لهذا المشروع بعد.</div>';
-                return;
-            }
+            </button>
 
-            const rootTasks = tasks.filter(t => !t.parent_id);
-            const subTasks = tasks.filter(t => t.parent_id);
+        </header>
 
-            tasksHierarchyContainer.innerHTML = rootTasks.map(parent => {
-                const children = subTasks.filter(c => c.parent_id === parent.id);
-                const pConf = priorityConfig[parent.priority] || priorityConfig['متوسطة'];
 
-                return `
-                    <div class="task-node">
-                        <div class="task-header">
-                            <div>
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <strong style="font-size: 1.05rem; color: #fff;">${escapeHtml(parent.title)}</strong>
-                                    <span class="priority-badge" style="background: ${pConf.bg}; color: ${pConf.color}; border: 1px solid ${pConf.border};">
-                                        ${parent.priority}
-                                    </span>
-                                </div>
-                                <p style="color: var(--text-muted); font-size: 0.86rem; margin-top: 4px;">
-                                    ${parent.description ? escapeHtml(parent.description) : 'لا يوجد وصف'}
-                                </p>
-                            </div>
-                            <div style="display: flex; gap: 8px; align-items: center;">
-                                <button type="button" class="btn-action-sm" onclick="setSubTaskParent(${parent.id}, '${escapeHtml(parent.title)}')">+ مهمة فرعية</button>
-                                <button type="button" class="btn-delete-sm" onclick="deleteTask(${parent.id})">حذف</button>
-                            </div>
-                        </div>
+        <!-- الإحصائيات -->
+        <section class="stats">
 
-                        ${children.length > 0 ? `
-                            <div class="subtasks-wrapper">
-                                ${children.map(child => {
-                                    const cConf = priorityConfig[child.priority] || priorityConfig['متوسطة'];
-                                    return `
-                                        <div class="subtask-node">
-                                            <div style="display: flex; align-items: center; gap: 8px;">
-                                                <span style="color: var(--primary); font-weight: bold;">↳</span>
-                                                <span style="font-weight: 500; font-size: 0.9rem;">${escapeHtml(child.title)}</span>
-                                                <span class="priority-badge" style="background: ${cConf.bg}; color: ${cConf.color}; border: 1px solid ${cConf.border};">
-                                                    ${child.priority}
-                                                </span>
-                                            </div>
-                                            <button type="button" class="btn-delete-sm" onclick="deleteTask(${child.id})">حذف</button>
-                                        </div>
-                                    `;
-                                }).join('')}
-                            </div>
-                        ` : ''}
+            <div class="stat-card">
+
+                <div class="stat-icon purple">
+                    ◫
+                </div>
+
+                <div>
+                    <span>إجمالي المهام</span>
+                    <strong id="totalTasks">0</strong>
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon orange">
+                    ◷
+                </div>
+
+                <div>
+                    <span>قيد العمل</span>
+                    <strong id="progressTasks">0</strong>
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon green">
+                    ✓
+                </div>
+
+                <div>
+                    <span>المهام المنتهية</span>
+                    <strong id="completedTasks">0</strong>
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon blue">
+                    ↗
+                </div>
+
+                <div>
+                    <span>نسبة الإنجاز</span>
+                    <strong id="completionPercent">0%</strong>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- البحث والتصفية -->
+        <section class="toolbar">
+
+            <div class="search-box">
+
+                🔍
+
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="ابحث عن مهمة...">
+
+            </div>
+
+
+            <div class="filters">
+
+                <select id="priorityFilter">
+
+                    <option value="all">
+                        جميع الأولويات
+                    </option>
+
+                    <option value="منخفضة">
+                        أولوية منخفضة
+                    </option>
+
+                    <option value="متوسطة">
+                        أولوية متوسطة
+                    </option>
+
+                    <option value="عالية">
+                        أولوية عالية
+                    </option>
+
+                </select>
+
+
+                <select id="memberFilter">
+
+                    <option value="all">
+                        جميع الأعضاء
+                    </option>
+
+                </select>
+
+            </div>
+
+        </section>
+
+
+        <!-- إضافة مهمة -->
+        <section class="add-task-box">
+
+            <!-- المشروع -->
+            <select id="projectInput">
+
+                <option value="">
+                    اختر المشروع
+                </option>
+
+            </select>
+
+
+            <!-- اسم المهمة -->
+            <input
+                type="text"
+                id="taskInput"
+                placeholder="ما المهمة التي تريد إضافتها؟">
+
+
+            <!-- الأولوية -->
+            <select id="priorityInput">
+
+                <option value="منخفضة">
+                    أولوية منخفضة
+                </option>
+
+                <option value="متوسطة" selected>
+                    أولوية متوسطة
+                </option>
+
+                <option value="عالية">
+                    أولوية عالية
+                </option>
+
+            </select>
+
+
+            <!-- المسؤول -->
+            <select id="assigneeInput">
+
+                <option value="">
+                    اختر المسؤول
+                </option>
+
+            </select>
+
+
+            <button onclick="addTask()">
+                إضافة المهمة
+            </button>
+
+        </section>
+
+
+        <!-- لوحة Kanban -->
+        <section class="board">
+
+
+            <!-- جديد -->
+            <div class="column todo">
+
+                <div class="column-header">
+
+                    <div>
+
+                        <span class="status-dot"></span>
+
+                        <h2>جديد</h2>
+
+                        <span class="count">0</span>
+
                     </div>
-                `;
-            }).join('');
-        }
 
-        window.setSubTaskParent = function(id, title) {
-            taskParentId.value = id;
-            parentTaskTitle.textContent = title;
-            parentTaskNotice.style.display = 'flex';
-            taskTitle.focus();
-            window.scrollTo({ top: taskForm.offsetTop - 40, behavior: 'smooth' });
-        };
+                    <button>
+                        •••
+                    </button>
 
-        window.deleteTask = async function(id) {
-            if (!confirm('هل أنت متأكد من حذف هذه المهمة؟ (سيتم حذف المهام الفرعية التابعة لها إن وجدت)')) return;
-            try {
-                const res = await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.error || 'فشل حذف المهمة');
+                </div>
 
-                showNotification('تم حذف المهمة بنجاح');
-                loadTasks(taskProjectId.value);
-            } catch (e) {
-                showNotification(e.message || 'تعذر حذف المهمة', 'error');
-            }
-        };
+                <div class="tasks"></div>
 
-        if (taskForm) {
-            taskForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
+            </div>
 
-                if (!taskProjectId.value) {
-                    showNotification('يرجى اختيار مشروع أولاً', 'error');
-                    return;
-                }
 
-                taskSubmitBtn.disabled = true;
+            <!-- قيد العمل -->
+            <div class="column progress">
 
-                const payload = {
-                    project_id: taskProjectId.value,
-                    title: taskTitle.value.trim(),
-                    description: taskDescription.value.trim(),
-                    priority: taskPriority.value,
-                    parent_id: taskParentId.value ? parseInt(taskParentId.value) : null
-                };
+                <div class="column-header">
 
-                try {
-                    const res = await fetch('/api/tasks', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
+                    <div>
 
-                    const data = await res.json();
-                    if (!res.ok) throw new Error(data.error || 'فشل في إضافة المهمة');
+                        <span class="status-dot"></span>
 
-                    taskTitle.value = '';
-                    taskDescription.value = '';
-                    taskParentId.value = '';
-                    parentTaskNotice.style.display = 'none';
+                        <h2>قيد العمل</h2>
 
-                    showNotification('تمت إضافة المهمة بنجاح!');
-                    loadTasks(taskProjectId.value);
-                } catch (err) {
-                    showNotification(err.message, 'error');
-                } finally {
-                    taskSubmitBtn.disabled = false;
-                }
-            });
-        }
+                        <span class="count">0</span>
 
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
+                    </div>
 
-        loadProjects().then(() => populateProjectSelect());
-    </script>
+                    <button>
+                        •••
+                    </button>
+
+                </div>
+
+                <div class="tasks"></div>
+
+            </div>
+
+
+            <!-- منتهي -->
+            <div class="column completed">
+
+                <div class="column-header">
+
+                    <div>
+
+                        <span class="status-dot"></span>
+
+                        <h2>منتهي</h2>
+
+                        <span class="count">0</span>
+
+                    </div>
+
+                    <button>
+                        •••
+                    </button>
+
+                </div>
+
+                <div class="tasks"></div>
+
+            </div>
+
+        </section>
+
+
+        <!-- سجل النشاط -->
+        <section class="activity-section">
+
+            <div class="activity-header">
+
+                <div>
+
+                    <span class="breadcrumb">
+                        آخر النشاطات
+                    </span>
+
+                    <h2>
+                        سجل النشاط
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="activityLog"
+                class="activity-log">
+
+                <div class="activity-empty">
+                    لا يوجد نشاط حتى الآن.
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <script src="script.js"></script>
+
 </body>
+
 </html>
