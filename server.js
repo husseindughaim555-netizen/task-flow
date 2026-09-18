@@ -9,6 +9,32 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 /* =========================================================
+   تجهيز البيانات الافتراضية الأولية (Auto-Seed)
+   ========================================================= */
+db.serialize(() => {
+    // التأكد من وجود مشروع افتراضي
+    db.get('SELECT COUNT(*) AS count FROM projects', (err, row) => {
+        if (!err && row && row.count === 0) {
+            db.run(
+                `INSERT INTO projects (name, description, start_date, expected_end_date)
+                 VALUES ('المشروع الافتراضي', 'مشروع أولي لإدارة المهام', '2026-01-01', '2026-12-31')`
+            );
+            console.log('✓ تم إنشاء مشروع افتراضي بنجاح.');
+        }
+    });
+
+    // التأكد من وجود مستخدمين افتراضيين
+    db.get('SELECT COUNT(*) AS count FROM users', (err, row) => {
+        if (!err && row && row.count === 0) {
+            db.run(`INSERT INTO users (name, email) VALUES ('حسين دغيم', 'hussein@taskflow.local')`);
+            db.run(`INSERT INTO users (name, email) VALUES ('أنس', 'anas@taskflow.local')`);
+            db.run(`INSERT INTO users (name, email) VALUES ('محمد عرابي', 'orabi@taskflow.local')`);
+            console.log('✓ تم إضافة أعضاء الفريق الافتراضيين بنجاح.');
+        }
+    });
+});
+
+/* =========================================================
    PROJECTS
    ========================================================= */
 
@@ -114,7 +140,6 @@ app.delete('/api/projects/:id', (req, res) => {
     );
 });
 
-
 /* =========================================================
    USERS
    ========================================================= */
@@ -139,10 +164,34 @@ app.get('/api/users', (req, res) => {
     });
 });
 
-
 /* =========================================================
    TASKS
    ========================================================= */
+
+// جلب جميع المهام (عام للوحة الكانبان)
+app.get('/api/tasks', (req, res) => {
+    const query = `
+        SELECT
+            tasks.*,
+            users.name AS assigned_to_name,
+            users.email AS assigned_to_email
+        FROM tasks
+        LEFT JOIN users
+            ON tasks.assigned_to = users.id
+        ORDER BY tasks.id ASC
+    `;
+
+    db.all(query, [], (err, rows) => {
+        if (err) {
+            console.error('خطأ في جلب المهام:', err.message);
+            return res.status(500).json({
+                error: 'حدث خطأ أثناء جلب المهام'
+            });
+        }
+
+        res.json(rows);
+    });
+});
 
 // جلب مهام مشروع معيّن
 app.get('/api/projects/:projectId/tasks', (req, res) => {
@@ -178,7 +227,6 @@ app.get('/api/projects/:projectId/tasks', (req, res) => {
     });
 });
 
-
 // إنشاء مهمة جديدة
 app.post('/api/tasks', (req, res) => {
     const {
@@ -206,24 +254,16 @@ app.post('/api/tasks', (req, res) => {
 
     const taskPriority = priority || 'متوسطة';
     const parentTaskId =
-        parent_id === null ||
-        parent_id === undefined ||
-        parent_id === ''
+        parent_id === null || parent_id === undefined || parent_id === ''
             ? null
             : Number(parent_id);
 
     const assignedUserId =
-        assigned_to === null ||
-        assigned_to === undefined ||
-        assigned_to === ''
+        assigned_to === null || assigned_to === undefined || assigned_to === ''
             ? null
             : Number(assigned_to);
 
-    const validPriorities = [
-        'منخفضة',
-        'متوسطة',
-        'عالية'
-    ];
+    const validPriorities = ['منخفضة', 'متوسطة', 'عالية'];
 
     if (!validPriorities.includes(taskPriority)) {
         return res.status(400).json({
@@ -231,17 +271,12 @@ app.post('/api/tasks', (req, res) => {
         });
     }
 
-    // التأكد أن المشروع موجود
     db.get(
         `SELECT id FROM projects WHERE id = ?`,
         [projectId],
         (projectErr, project) => {
             if (projectErr) {
-                console.error(
-                    'خطأ في التحقق من المشروع:',
-                    projectErr.message
-                );
-
+                console.error('خطأ في التحقق من المشروع:', projectErr.message);
                 return res.status(500).json({
                     error: 'حدث خطأ أثناء التحقق من المشروع'
                 });
@@ -253,468 +288,234 @@ app.post('/api/tasks', (req, res) => {
                 });
             }
 
-            // إذا كانت المهمة فرعية، نتأكد أن المهمة الأب
-            // موجودة ضمن نفس المشروع
-            const checkParent = (callback) => {
-                if (parentTaskId === null) {
-                    return callback(null);
-                }
+            const insertTask = () => {
+                const query = `
+                    INSERT INTO tasks
+                    (
+                        project_id,
+                        title,
+                        description,
+                        priority,
+                        status,
+                        parent_id,
+                        assigned_to
+                    )
+                    VALUES (?, ?, ?, ?, 'جديد', ?, ?)
+                `;
 
-                if (!Number.isInteger(parentTaskId)) {
-                    return res.status(400).json({
-                        error: 'معرّف المهمة الأب غير صالح'
-                    });
-                }
-
-                db.get(
-                    `
-                    SELECT id
-                    FROM tasks
-                    WHERE id = ?
-                    AND project_id = ?
-                    `,
-                    [parentTaskId, projectId],
-                    (err, parentTask) => {
+                db.run(
+                    query,
+                    [
+                        projectId,
+                        title,
+                        description || '',
+                        taskPriority,
+                        parentTaskId,
+                        assignedUserId
+                    ],
+                    function (err) {
                         if (err) {
-                            return callback(err);
-                        }
-
-                        if (!parentTask) {
-                            return res.status(400).json({
-                                error: 'المهمة الأب غير موجودة ضمن هذا المشروع'
+                            console.error('خطأ في إنشاء المهمة:', err.message);
+                            return res.status(500).json({
+                                error: 'حدث خطأ أثناء إنشاء المهمة'
                             });
                         }
 
-                        callback(null);
+                        res.status(201).json({
+                            id: this.lastID,
+                            project_id: projectId,
+                            title,
+                            description: description || '',
+                            priority: taskPriority,
+                            status: 'جديد',
+                            parent_id: parentTaskId,
+                            assigned_to: assignedUserId
+                        });
                     }
                 );
             };
 
-            checkParent((parentErr) => {
-                if (parentErr) {
-                    console.error(
-                        'خطأ في التحقق من المهمة الأب:',
-                        parentErr.message
-                    );
+            if (assignedUserId === null) {
+                insertTask();
+                return;
+            }
 
-                    return res.status(500).json({
-                        error: 'حدث خطأ أثناء التحقق من المهمة الأب'
-                    });
-                }
-
-                // التحقق من المستخدم إذا تم إرساله
-                const insertTask = () => {
-                    const query = `
-                        INSERT INTO tasks
-                        (
-                            project_id,
-                            title,
-                            description,
-                            priority,
-                            status,
-                            parent_id,
-                            assigned_to
-                        )
-                        VALUES (?, ?, ?, ?, 'جديد', ?, ?)
-                    `;
-
-                    db.run(
-                        query,
-                        [
-                            projectId,
-                            title,
-                            description || '',
-                            taskPriority,
-                            parentTaskId,
-                            assignedUserId
-                        ],
-                        function (err) {
-                            if (err) {
-                                console.error(
-                                    'خطأ في إنشاء المهمة:',
-                                    err.message
-                                );
-
-                                return res.status(500).json({
-                                    error: 'حدث خطأ أثناء إنشاء المهمة'
-                                });
-                            }
-
-                            res.status(201).json({
-                                id: this.lastID,
-                                project_id: projectId,
-                                title,
-                                description: description || '',
-                                priority: taskPriority,
-                                status: 'جديد',
-                                parent_id: parentTaskId,
-                                assigned_to: assignedUserId
-                            });
-                        }
-                    );
-                };
-
-                if (assignedUserId === null) {
+            db.get(
+                `SELECT id FROM users WHERE id = ?`,
+                [assignedUserId],
+                (userErr, user) => {
+                    if (userErr || !user) {
+                        return res.status(400).json({
+                            error: 'العضو المحدد غير موجود'
+                        });
+                    }
                     insertTask();
-                    return;
-                }
-
-                if (!Number.isInteger(assignedUserId)) {
-                    return res.status(400).json({
-                        error: 'معرّف العضو غير صالح'
-                    });
-                }
-
-                db.get(
-                    `SELECT id FROM users WHERE id = ?`,
-                    [assignedUserId],
-                    (userErr, user) => {
-                        if (userErr) {
-                            console.error(
-                                'خطأ في التحقق من العضو:',
-                                userErr.message
-                            );
-
-                            return res.status(500).json({
-                                error: 'حدث خطأ أثناء التحقق من العضو'
-                            });
-                        }
-
-                        if (!user) {
-                            return res.status(400).json({
-                                error: 'العضو المحدد غير موجود'
-                            });
-                        }
-
-                        insertTask();
-                    }
-                );
-            });
-        }
-    );
-});
-
-
-/* =========================================================
-   UPDATE TASK DATA
-   ========================================================= */
-
-// تعديل عنوان / وصف / أولوية / عضو المهمة
-app.put('/api/tasks/:id', (req, res) => {
-    const taskId = Number(req.params.id);
-
-    const {
-        title,
-        description,
-        priority,
-        assigned_to
-    } = req.body;
-
-    if (!Number.isInteger(taskId)) {
-        return res.status(400).json({
-            error: 'معرّف المهمة غير صالح'
-        });
-    }
-
-    if (!title) {
-        return res.status(400).json({
-            error: 'عنوان المهمة مطلوب'
-        });
-    }
-
-    const taskPriority = priority || 'متوسطة';
-
-    const validPriorities = [
-        'منخفضة',
-        'متوسطة',
-        'عالية'
-    ];
-
-    if (!validPriorities.includes(taskPriority)) {
-        return res.status(400).json({
-            error: 'الأولوية غير صالحة'
-        });
-    }
-
-    const assignedUserId =
-        assigned_to === null ||
-        assigned_to === undefined ||
-        assigned_to === ''
-            ? null
-            : Number(assigned_to);
-
-    const updateTask = () => {
-        const query = `
-            UPDATE tasks
-            SET
-                title = ?,
-                description = ?,
-                priority = ?,
-                assigned_to = ?
-            WHERE id = ?
-        `;
-
-        db.run(
-            query,
-            [
-                title,
-                description || '',
-                taskPriority,
-                assignedUserId,
-                taskId
-            ],
-            function (err) {
-                if (err) {
-                    console.error(
-                        'خطأ في تعديل المهمة:',
-                        err.message
-                    );
-
-                    return res.status(500).json({
-                        error: 'حدث خطأ أثناء تعديل المهمة'
-                    });
-                }
-
-                if (this.changes === 0) {
-                    return res.status(404).json({
-                        error: 'المهمة غير موجودة'
-                    });
-                }
-
-                res.json({
-                    message: 'تم تعديل المهمة بنجاح'
-                });
-            }
-        );
-    };
-
-    if (assignedUserId === null) {
-        updateTask();
-        return;
-    }
-
-    if (!Number.isInteger(assignedUserId)) {
-        return res.status(400).json({
-            error: 'معرّف العضو غير صالح'
-        });
-    }
-
-    db.get(
-        `SELECT id FROM users WHERE id = ?`,
-        [assignedUserId],
-        (err, user) => {
-            if (err) {
-                return res.status(500).json({
-                    error: 'حدث خطأ أثناء التحقق من العضو'
-                });
-            }
-
-            if (!user) {
-                return res.status(400).json({
-                    error: 'العضو المحدد غير موجود'
-                });
-            }
-
-            updateTask();
-        }
-    );
-});
-
-
-/* =========================================================
-   KANBAN STATUS
-   ========================================================= */
-
-// تغيير حالة المهمة من Kanban
-app.patch('/api/tasks/:id', (req, res) => {
-    const taskId = Number(req.params.id);
-    const { status } = req.body;
-
-    const validStatuses = [
-        'جديد',
-        'قيد العمل',
-        'منتهي'
-    ];
-
-    if (!Number.isInteger(taskId)) {
-        return res.status(400).json({
-            error: 'معرّف المهمة غير صالح'
-        });
-    }
-
-    if (!validStatuses.includes(status)) {
-        return res.status(400).json({
-            error: 'حالة المهمة غير صالحة'
-        });
-    }
-
-    // جلب الحالة القديمة أولاً
-    db.get(
-        `
-        SELECT id, status
-        FROM tasks
-        WHERE id = ?
-        `,
-        [taskId],
-        (err, task) => {
-            if (err) {
-                console.error(
-                    'خطأ في جلب المهمة:',
-                    err.message
-                );
-
-                return res.status(500).json({
-                    error: 'حدث خطأ أثناء جلب المهمة'
-                });
-            }
-
-            if (!task) {
-                return res.status(404).json({
-                    error: 'المهمة غير موجودة'
-                });
-            }
-
-            // إذا لم تتغير الحالة
-            if (task.status === status) {
-                return res.json({
-                    message: 'الحالة لم تتغير',
-                    id: taskId,
-                    status
-                });
-            }
-
-            // تحديث الحالة
-            db.run(
-                `
-                UPDATE tasks
-                SET status = ?
-                WHERE id = ?
-                `,
-                [status, taskId],
-                function (updateErr) {
-                    if (updateErr) {
-                        console.error(
-                            'خطأ في تحديث حالة المهمة:',
-                            updateErr.message
-                        );
-
-                        return res.status(500).json({
-                            error: 'حدث خطأ أثناء تحديث حالة المهمة'
-                        });
-                    }
-
-                    if (this.changes === 0) {
-                        return res.status(404).json({
-                            error: 'المهمة غير موجودة'
-                        });
-                    }
-
-                    // تسجيل التغيير في Activity Log
-                    db.run(
-                        `
-                        INSERT INTO activity_log
-                        (
-                            task_id,
-                            old_status,
-                            new_status
-                        )
-                        VALUES (?, ?, ?)
-                        `,
-                        [
-                            taskId,
-                            task.status,
-                            status
-                        ],
-                        function (logErr) {
-                            if (logErr) {
-                                console.error(
-                                    'خطأ في تسجيل النشاط:',
-                                    logErr.message
-                                );
-
-                                return res.status(500).json({
-                                    error:
-                                        'تم تغيير الحالة لكن حدث خطأ أثناء تسجيل النشاط'
-                                });
-                            }
-
-                            res.json({
-                                message:
-                                    'تم تحديث حالة المهمة وتسجيل التغيير بنجاح',
-                                id: taskId,
-                                old_status: task.status,
-                                status
-                            });
-                        }
-                    );
                 }
             );
         }
     );
 });
 
+/* =========================================================
+   TASK ASSIGNMENT & UPDATE
+   ========================================================= */
+
+// إسناد مهمة لعضو (ميزة العضو رقم 3)
+app.put('/api/tasks/:id/assign', (req, res) => {
+    const taskId = Number(req.params.id);
+    const { assigned_to } = req.body;
+
+    const assignedUserId =
+        assigned_to === null || assigned_to === undefined || assigned_to === ''
+            ? null
+            : Number(assigned_to);
+
+    db.run(
+        'UPDATE tasks SET assigned_to = ? WHERE id = ?',
+        [assignedUserId, taskId],
+        function (err) {
+            if (err) {
+                console.error('خطأ في إسناد المهمة:', err.message);
+                return res.status(500).json({ error: err.message });
+            }
+            res.json({ message: 'تم إسناد المهمة بنجاح', changes: this.changes });
+        }
+    );
+});
+
+// تعديل المهمة
+app.put('/api/tasks/:id', (req, res) => {
+    const taskId = Number(req.params.id);
+    const { title, description, priority, assigned_to } = req.body;
+
+    if (!Number.isInteger(taskId)) {
+        return res.status(400).json({ error: 'معرّف المهمة غير صالح' });
+    }
+
+    if (!title) {
+        return res.status(400).json({ error: 'عنوان المهمة مطلوب' });
+    }
+
+    const taskPriority = priority || 'متوسطة';
+    const assignedUserId =
+        assigned_to === null || assigned_to === undefined || assigned_to === ''
+            ? null
+            : Number(assigned_to);
+
+    const query = `
+        UPDATE tasks
+        SET title = ?, description = ?, priority = ?, assigned_to = ?
+        WHERE id = ?
+    `;
+
+    db.run(
+        query,
+        [title, description || '', taskPriority, assignedUserId, taskId],
+        function (err) {
+            if (err) {
+                console.error('خطأ في تعديل المهمة:', err.message);
+                return res.status(500).json({ error: 'حدث خطأ أثناء تعديل المهمة' });
+            }
+
+            if (this.changes === 0) {
+                return res.status(404).json({ error: 'المهمة غير موجودة' });
+            }
+
+            res.json({ message: 'تم تعديل المهمة بنجاح' });
+        }
+    );
+});
+
+/* =========================================================
+   KANBAN STATUS
+   ========================================================= */
+
+// تغيير حالة المهمة من لوحة Kanban
+app.patch('/api/tasks/:id', (req, res) => {
+    const taskId = Number(req.params.id);
+    const { status } = req.body;
+
+    const validStatuses = ['جديد', 'قيد العمل', 'منتهي'];
+
+    if (!Number.isInteger(taskId)) {
+        return res.status(400).json({ error: 'معرّف المهمة غير صالح' });
+    }
+
+    if (!validStatuses.includes(status)) {
+        return res.status(400).json({ error: 'حالة المهمة غير صالحة' });
+    }
+
+    db.get('SELECT id, status FROM tasks WHERE id = ?', [taskId], (err, task) => {
+        if (err || !task) {
+            return res.status(404).json({ error: 'المهمة غير موجودة' });
+        }
+
+        if (task.status === status) {
+            return res.json({ message: 'الحالة لم تتغير', id: taskId, status });
+        }
+
+        db.run(
+            'UPDATE tasks SET status = ? WHERE id = ?',
+            [status, taskId],
+            function (updateErr) {
+                if (updateErr) {
+                    return res.status(500).json({ error: 'حدث خطأ أثناء تحديث حالة المهمة' });
+                }
+
+                // تسجيل الحدث في النشاطات
+                db.run(
+                    `INSERT INTO activity_log (task_id, old_status, new_status) VALUES (?, ?, ?)`,
+                    [taskId, task.status, status]
+                );
+
+                res.json({
+                    message: 'تم تحديث حالة المهمة بنجاح',
+                    id: taskId,
+                    old_status: task.status,
+                    status
+                });
+            }
+        );
+    });
+});
 
 /* =========================================================
    DELETE TASK
    ========================================================= */
 
-// حذف مهمة وجميع المهام الفرعية التابعة لها
 app.delete('/api/tasks/:id', (req, res) => {
     const taskId = Number(req.params.id);
 
     if (!Number.isInteger(taskId)) {
-        return res.status(400).json({
-            error: 'معرّف المهمة غير صالح'
-        });
+        return res.status(400).json({ error: 'معرّف المهمة غير صالح' });
     }
 
-    const query = `
-        DELETE FROM tasks
-        WHERE id = ?
-        OR parent_id = ?
-    `;
-
     db.run(
-        query,
+        'DELETE FROM tasks WHERE id = ? OR parent_id = ?',
         [taskId, taskId],
         function (err) {
             if (err) {
-                console.error(
-                    'خطأ في حذف المهمة:',
-                    err.message
-                );
-
-                return res.status(500).json({
-                    error: 'حدث خطأ أثناء حذف المهمة'
-                });
+                return res.status(500).json({ error: 'حدث خطأ أثناء حذف المهمة' });
             }
 
             if (this.changes === 0) {
-                return res.status(404).json({
-                    error: 'المهمة غير موجودة'
-                });
+                return res.status(404).json({ error: 'المهمة غير موجودة' });
             }
 
-            res.json({
-                message: 'تم حذف المهمة بنجاح'
-            });
+            res.json({ message: 'تم حذف المهمة بنجاح' });
         }
     );
 });
-
 
 /* =========================================================
    ACTIVITY LOG
    ========================================================= */
 
-// جلب سجل النشاط لمشروع معيّن
 app.get('/api/projects/:projectId/activity', (req, res) => {
     const projectId = Number(req.params.projectId);
 
     if (!Number.isInteger(projectId)) {
-        return res.status(400).json({
-            error: 'معرّف المشروع غير صالح'
-        });
+        return res.status(400).json({ error: 'معرّف المشروع غير صالح' });
     }
 
     const query = `
@@ -726,28 +527,18 @@ app.get('/api/projects/:projectId/activity', (req, res) => {
             activity_log.changed_at,
             tasks.title AS task_title
         FROM activity_log
-        INNER JOIN tasks
-            ON activity_log.task_id = tasks.id
+        INNER JOIN tasks ON activity_log.task_id = tasks.id
         WHERE tasks.project_id = ?
         ORDER BY activity_log.id DESC
     `;
 
     db.all(query, [projectId], (err, rows) => {
         if (err) {
-            console.error(
-                'خطأ في جلب سجل النشاط:',
-                err.message
-            );
-
-            return res.status(500).json({
-                error: 'حدث خطأ أثناء جلب سجل النشاط'
-            });
+            return res.status(500).json({ error: 'حدث خطأ أثناء جلب سجل النشاط' });
         }
-
         res.json(rows);
     });
 });
-
 
 /* =========================================================
    START SERVER
